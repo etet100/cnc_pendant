@@ -2,6 +2,7 @@
 #include <HardwareSerial.h>
 #include <PolledTimeout.h>
 #include <SPI.h>
+#define I2C
 #ifdef I2C
 #include <Wire.h>
 #include "AS5600.h"
@@ -11,9 +12,9 @@
 #include "GUIslice.h"
 #include "GUIslice_drv.h"
 
-#define SDA_PIN D4
-#define SCL_PIN D5
-//#define WIFI 1
+#define SDA_PIN D3
+#define SCL_PIN D4
+#define WIFI 1
 #ifdef WIFI
     #include <ESP8266WiFi.h>
 #endif
@@ -33,7 +34,7 @@ bool isWifiConnected = false;
 bool isWifiConnecting = false;
 
 #ifdef I2C
-AS5600 as5600(&Wire);
+    AS5600 as5600(&Wire);
 #endif
 
 // Enumerations for pages, elements, fonts, images
@@ -77,6 +78,8 @@ void initGUI()
 
     // Start up display on main page
     gslc_SetPageCur(&m_gui, E_PG_MAIN);
+
+    gslc_DrvRotate(&m_gui, 1);
 }
 
 void setup()
@@ -115,8 +118,8 @@ void setup()
     //as5600.getAddress();
 
     #ifdef I2C
-    Wire.begin(SDA_PIN, SCL_PIN); // join i2c bus (address optional for master)
-    Wire.setClock(100000);        // 400kHz I2C clock. Comment this line if having compilation difficulties
+        Wire.begin(SDA_PIN, SCL_PIN); // join i2c bus (address optional for master)
+        Wire.setClock(100000);        // 400kHz I2C clock. Comment this line if having compilation difficulties
     #endif
 
     #ifdef WIFI
@@ -137,23 +140,21 @@ void setup()
     // Serial.println("WiFi connected");
 
     #ifdef I2C
-     as5600.begin();
-    int b = as5600.isConnected();
+        as5600.begin();
+        int b = as5600.isConnected();
 
-    Serial.print("Connect: ");
-    Serial.println(b);
+        Serial.print("Connect: ");
+        Serial.println(b);
     #endif
 }
 
 void loop()
 {
-    gslc_DrawFillCircle(&m_gui, 50, 50, 20, GSLC_COL_BLUE);
-    gslc_DrawFillCircle(&m_gui, 100, 100, 20, GSLC_COL_GREEN);
+    gslc_DrawFillCircle(&m_gui, rand() % 200, rand() % 300, 20, GSLC_COL_BLUE);
+    gslc_DrawFillCircle(&m_gui, rand() % 200, rand() % 300, 20, GSLC_COL_GREEN);
     gslc_Update(&m_gui);
 
-    delay(500);
-
-    return;
+    delay(100);
 
     #ifdef WIFI
         if (!isWifiConnected && !isWifiConnecting)
@@ -169,15 +170,13 @@ void loop()
 
     if (millis() - lastTime >= 100)
     {
-        // lastTime = millis();
-        // Serial.print(as5600.getCumulativePosition());
-        // Serial.print("\t");
-        // Serial.println(as5600.getRevolutions());
+        lastTime = millis();
+        Serial.println(as5600.getCumulativePosition());
     }
 
     // put your main code here, to run repeatedly:
     //Serial.println("Hello, world!");
-    delay(500);
+    delay(100);
 
     // using periodic = esp8266::polledTimeout::periodicMs;
     // static periodic nextPing(1000);
