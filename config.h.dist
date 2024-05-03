@@ -1,0 +1,7 @@
+#ifndef CONFIG_H_
+#define CONFIG_H_
+
+#define WIFI_SSID "<ssid>"
+#define WIFI_PASSWORD "<password>"
+
+#endif // CONFIG_H_
