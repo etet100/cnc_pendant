@@ -1,14 +1,22 @@
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
 #include <HardwareSerial.h>
 #include <PolledTimeout.h>
 #include <SPI.h>
+#ifdef I2C
 #include <Wire.h>
-#include "../config.h"
 #include "AS5600.h"
+#endif
+#include "../config.h"
+#include "guislice-config.h"
+#include "GUIslice.h"
+#include "GUIslice_drv.h"
 
 #define SDA_PIN D4
 #define SCL_PIN D5
+//#define WIFI 1
+#ifdef WIFI
+    #include <ESP8266WiFi.h>
+#endif
 
 // const int16_t I2C_MASTER = 0x42;
 // const int16_t I2C_SLAVE = 0x08;
@@ -16,37 +24,105 @@
 const char *ssid = WIFI_SSID;
 const char *password = WIFI_PASSWORD;
 
-WiFiEventHandler wifiGotIPHandler;
-WiFiEventHandler wifiConnectedHandler;
+#ifdef WIFI
+    WiFiEventHandler wifiGotIPHandler;
+    WiFiEventHandler wifiConnectedHandler;
+#endif
 
 bool isWifiConnected = false;
 bool isWifiConnecting = false;
 
+#ifdef I2C
 AS5600 as5600(&Wire);
+#endif
+
+// Enumerations for pages, elements, fonts, images
+enum {E_PG_MAIN};
+enum {E_ELEM_BOX};
+
+// Instantiate the GUI
+#define MAX_PAGE            1
+#define MAX_ELEM_PG_MAIN    1
+
+gslc_tsGui                  m_gui;
+gslc_tsDriver               m_drv;
+gslc_tsPage                 m_asPage[MAX_PAGE];
+gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN];
+gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
+
+static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
+
+void initGUI()
+{
+    gslc_tsElemRef *pElemRef = NULL;
+
+    // Initialize debug output
+    gslc_InitDebug(&DebugOut);
+    // delay(1000);  // NOTE: Some devices require a delay after Serial.begin() before serial port can be used
+
+    // Initialize
+    if (!gslc_Init(&m_gui, &m_drv, m_asPage, MAX_PAGE, NULL, 0))
+    {
+        return;
+    }
+
+    gslc_PageAdd(&m_gui, E_PG_MAIN, m_asPageElem, MAX_ELEM_PG_MAIN, m_asPageElemRef, MAX_ELEM_PG_MAIN);
+
+    // Background flat color
+    gslc_SetBkgndColor(&m_gui, GSLC_COL_RED);
+
+    // Create page elements
+    pElemRef = gslc_ElemCreateBox(&m_gui, E_ELEM_BOX, E_PG_MAIN, (gslc_tsRect){10, 50, 300, 150});
+    gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_WHITE, GSLC_COL_BLACK, GSLC_COL_BLACK);
+
+    // Start up display on main page
+    gslc_SetPageCur(&m_gui, E_PG_MAIN);
+}
 
 void setup()
 {
+    ESP.wdtDisable();
+    *((volatile uint32_t*) 0x60000900) &= ~(1); // Disable hardware WDT
+
     Serial.begin(115200);
-
-    wifiGotIPHandler = WiFi.onStationModeGotIP([](const WiFiEventStationModeGotIP &event) {
-        Serial.print("Station connected, IP: ");
-        Serial.println(WiFi.localIP());
-
-        isWifiConnected = true;
-        isWifiConnecting = false;
-    });
-    wifiConnectedHandler = WiFi.onStationModeConnected([](const WiFiEventStationModeConnected &event) {
-        Serial.println("Connected to WiFi");
-    });
+    SPI.pins(14, 12, 13, 15); // SCK, MISO, MOSI, SS
+    SPI.setHwCs(true);
+    SPI.begin();  	
+    SPI.setFrequency(5000);
+    pinMode(D1, OUTPUT);
+    pinMode(D2, OUTPUT);
+    digitalWrite(D1, LOW);
+    digitalWrite(D2, LOW);
+    delay(200);
+    digitalWrite(D1, HIGH);
+    digitalWrite(D2, HIGH);
     
+    #ifdef WIFI
+        wifiGotIPHandler = WiFi.onStationModeGotIP([](const WiFiEventStationModeGotIP &event) {
+            Serial.print("Station connected, IP: ");
+            Serial.println(WiFi.localIP());
 
+            isWifiConnected = true;
+            isWifiConnecting = false;
+        });
+        wifiConnectedHandler = WiFi.onStationModeConnected([](const WiFiEventStationModeConnected &event) {
+            Serial.println("Connected to WiFi");
+        });
+    #endif
+
+    initGUI();
+    
     //as5600.getAddress();
 
+    #ifdef I2C
     Wire.begin(SDA_PIN, SCL_PIN); // join i2c bus (address optional for master)
     Wire.setClock(100000);        // 400kHz I2C clock. Comment this line if having compilation difficulties
+    #endif
 
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(ssid, password);
+    #ifdef WIFI
+        WiFi.mode(WIFI_STA);
+        WiFi.begin(ssid, password);
+    #endif
 
     Serial.println();
     Serial.println();
@@ -60,21 +136,32 @@ void setup()
 
     // Serial.println("WiFi connected");
 
-    as5600.begin();
-
+    #ifdef I2C
+     as5600.begin();
     int b = as5600.isConnected();
 
     Serial.print("Connect: ");
     Serial.println(b);
+    #endif
 }
 
 void loop()
 {
-    if (!isWifiConnected && !isWifiConnecting)
-    {
-        scanNetworks();
-        return;
-    }
+    gslc_DrawFillCircle(&m_gui, 50, 50, 20, GSLC_COL_BLUE);
+    gslc_DrawFillCircle(&m_gui, 100, 100, 20, GSLC_COL_GREEN);
+    gslc_Update(&m_gui);
+
+    delay(500);
+
+    return;
+
+    #ifdef WIFI
+        if (!isWifiConnected && !isWifiConnecting)
+        {
+            scanNetworks();
+            return;
+        }
+    #endif
 
     Serial.println("Testing AS5600");
 
@@ -82,10 +169,10 @@ void loop()
 
     if (millis() - lastTime >= 100)
     {
-        lastTime = millis();
-        Serial.print(as5600.getCumulativePosition());
-        Serial.print("\t");
-        Serial.println(as5600.getRevolutions());
+        // lastTime = millis();
+        // Serial.print(as5600.getCumulativePosition());
+        // Serial.print("\t");
+        // Serial.println(as5600.getRevolutions());
     }
 
     // put your main code here, to run repeatedly:
@@ -107,6 +194,7 @@ void loop()
     // }
 }
 
+#ifdef WIFI
 void scanNetworks()
 {
     String ssid;
@@ -140,3 +228,4 @@ void scanNetworks()
 
     isWifiConnecting = true;
 }
+#endif
