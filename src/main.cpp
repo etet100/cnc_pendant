@@ -51,6 +51,8 @@ void setup()
     *((volatile uint32_t*) 0x60000900) &= ~(1); // Disable hardware WDT
 
     tft.begin();
+    tft.setRotation(2);
+    tft.fillRect(0, 0, 240, 320, ILI9341_BLACK);
 
     // tft.setAddrWindow(0, 0, 200, 200);
 
@@ -115,6 +117,48 @@ void setup()
         Serial.print("Connect: ");
         Serial.println(b);
     #endif
+}
+
+void drawChar(uint16_t x, uint16_t y, byte char_) {
+    if (char_ < 48 || char_ > 57) {
+        return;
+    }
+
+    const uint8_t *font_data = font_7seg;
+    font_data += pgm_read_word(&font_7seg_map[char_ - 32]);
+    uint8_t width = pgm_read_byte(font_data++);
+    uint8_t height = pgm_read_byte(font_data++);
+    if (width == 0 || height == 0 || width > 100 || height > 100) {
+        return;
+    }
+    uint16_t decoded_size = width * height * 2;
+    uint16_t *buf = (uint16_t*)malloc(decoded_size);
+    uint16_t *pos = buf;
+    char font_byte = pgm_read_byte(font_data++);
+    while (font_byte) {
+        uint8_t color = font_byte & 0b11;
+        font_byte >>= 2;
+        while (font_byte--) {
+            *pos++ = color == 0 ? ILI9341_BLACK : ILI9341_WHITE;
+        }
+        font_byte = pgm_read_byte(font_data++);
+    }
+    tft.startWrite();
+    tft.setAddrWindow(x, y, width, height);
+    nbSPI_writeBytes((uint8_t*) buf, decoded_size);
+    while (nbSPI_isBusy()) {
+        delayMicroseconds(3);
+    };
+    tft.endWrite();
+    free(buf);
+}
+
+void drawNumber(uint16_t x, uint16_t y, int number) {
+    char buf[10];
+    sprintf(buf, "%d", number);
+    for (int i = 0; i < strlen(buf); i++) {
+        drawChar(x + i * 32, y, buf[i]);
+    }
 }
 
 void char_() {
@@ -192,7 +236,7 @@ void loop()
 {
     //Serial.println("Looping");
 
-    delay(5);
+    delay(25);
 
     #ifdef WIFI
         // if (!isWifiConnected && !isWifiConnecting && !isScanningNetworks)
@@ -205,10 +249,11 @@ void loop()
 
     //Serial.println("Testing AS5600");
 
-    test();
-    test();
-    test();
-    test();
+    static int number = 0;
+
+    drawNumber(5, 5, number+=5);
+    drawNumber(5, 55, number+=2);
+    drawNumber(5, 105, number+=100);
 
     static uint32_t lastTime = 0;
 
