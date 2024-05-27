@@ -1,11 +1,7 @@
 import os, glob
 import pkg_resources
-
-# Import("env")
-# env.Execute("$PYTHONEXE -m pip --version")
-
 from pathlib import Path
-from PIL import Image
+from PIL import Image, ImageFont, ImageDraw
 
 def rgb888tobgr565(red, green, blue):
     return ((blue & 0xF8) << 8) | ((green & 0xFC) << 3) | (red >> 3)
@@ -61,7 +57,124 @@ def find_images():
     file.write("#endif\n")
     file.close()
 
+def build_rle_byte(color, count):
+    return (count << 2) | color
+
+def generate_character(char, font, width, height, file):
+    background_color = (1) #(255, 255, 255)
+    text_color = 255 #(0, 0, 0)
+
+    print("Generating character: %s (%d x %d)" % (char, width, height))
+    file.write("// %s (%d x %d)\n" % (char, width, height))
+    file.write("%d, %d,\n" % (width, height))
+
+    image = Image.new("L", (width, height), background_color)
+
+    draw = ImageDraw.Draw(image)
+    draw.text((0, 0), char, font=font, fill=text_color)
+
+    list = []
+    count = 0
+    last_color = -1
+
+    px = image.load()
+    for y in range(height):
+        for x in range(width):
+            color = int(px[x, y] / 64)
+            if (last_color == -1):
+                last_color = color
+                count = 0
+            if (color == last_color and count < 63):
+                count += 1
+            else:
+                list.append(build_rle_byte(last_color, count))
+                last_color = color
+                count = 1
+
+    if (count > 0):
+        list.append(build_rle_byte(last_color, count))
+
+    # end of char
+    list.append(0x00)
+
+    # print("images\\%s.bmp" % char)
+    # image.save("images\\%s.bmp" % char)
+
+    for (i, byte) in enumerate(list):
+        file.write("0x%02x, " % byte)
+        if ((i + 1) % 26 == 0):
+            file.write("\n")
+
+    file.write("\n")
+    # print(len(list))
+    # print(width * height)
+    # print(width * height / 4)
+    # print(list)
+
+    # add 2 for width and height
+    return len(list) + 2
+
+def generate_font(font_path, font_size):
+    font_name = Path(font_path).stem
+
+    file = open("include\\fonts\\font.h", "w")
+    file.write("#include \"Arduino.h\"\n")
+    file.write("\n")
+    file.write("// %s\n" % os.path.basename(font_path))
+    file.write("\n")
+    file.write("static const uint8_t font_%s[] PROGMEM = {\n" % font_name)
+
+    font = ImageFont.truetype(font_path, font_size)
+
+    # Utwórz pusty obrazek (szerokość, wysokość, kolor tła)
+    # width, height = 500, font_size + 5
+    # background_color = 1; #(255, 255, 255)
+    # image = Image.new("L", (width, height), 1)
+
+    # # Utwórz obiekt rysowania
+    # draw = ImageDraw.Draw(image)
+
+
+    # map for font, 32 to 126
+    map = {};
+    for byte in range(32, 127):
+        map[byte] = 0xFFFF
+    map_pos = 0
+
+    chars = ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".")
+    for (i, char) in enumerate(chars):
+        byte = bytes(char, encoding="ascii")[0]
+        map[byte] = map_pos
+        map_pos += generate_character(char, font, int(font.getlength(char)), font_size + 5, file)
+        # print(font.getlength(char))
+        # # text = "0123456789."
+        # text_color = 255 #(0, 0, 0)
+
+        # # Narysuj tekst na obrazku
+        # pos = text_position.copy()
+        # pos[0] += (28 - font.getlength(char)) / 2;
+        # draw.text(pos, char, font=font, fill=text_color)
+        # # draw.rectangle([text_position[0], 0, text_position[0] + 22, font_size], outline=(0, 0, 0))
+        # text_position[0] += 30;
+
+    # Zapisz obrazek do pliku
+    # image.save('obrazek_z_tekstem.bmp')
+    file.write("};\n")
+
+    file.write("static const uint16_t font_%s_map[] PROGMEM = {\n" % font_name)
+
+    for (i, byte) in map.items():
+        file.write("%d /* %d */, " % (byte, i))
+        if ((i + 1) % 10 == 0):
+            file.write("\n")
+
+    file.write("};\n")
+
+    file.close()
+
 print("--------------------------------")
+print("Generating fonts images")
+generate_font("fonts/7seg.ttf", 40) # DSEG7Classic-Bold.ttf
 print("Converting images to C arrays...")
 find_images()
 print("--------------------------------")

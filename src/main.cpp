@@ -13,6 +13,7 @@
 #include "nbSPI.h"
 #include "images.h"
 #include "screen.h"
+#include "fonts/font.h"
 
 #define SDA_PIN D3
 #define SCL_PIN D4
@@ -116,8 +117,43 @@ void setup()
     #endif
 }
 
+void char_() {
+    const uint8_t *font_data = font_7seg;
+    // Serial.println((rand() % 8) + 48 - 32);
+    // Serial.println(pgm_read_word(&font_7seg_map[(rand() % 8) + 48 - 32]));
+    font_data += pgm_read_word(&font_7seg_map[(rand() % 8) + 48 - 32]);
+    uint8_t width = pgm_read_byte(font_data++);
+    uint8_t height = pgm_read_byte(font_data++);
+    if (width == 0 || height == 0 || width > 100 || height > 100) {
+        return;
+    }
+    uint16_t decoded_size = width * height * 2;
+    uint16_t *buf = (uint16_t*)malloc(decoded_size);
+    uint16_t *pos = buf;
+    char font_byte = pgm_read_byte(font_data++);
+    while (font_byte) {
+        uint8_t color = font_byte & 0b11;
+        font_byte >>= 2;
+        while (font_byte--) {
+            *pos++ = color == 0 ? ILI9341_BLACK : ILI9341_WHITE;
+        }
+        font_byte = pgm_read_byte(font_data++);
+    }
+    tft.startWrite();
+    tft.setAddrWindow(rand() % 190, rand() % 290, width, height);
+    nbSPI_writeBytes((uint8_t*) buf, decoded_size);
+    while (nbSPI_isBusy()) {
+        delayMicroseconds(3);
+    };
+    tft.endWrite();
+    free(buf);
+}
+
 void test() {
     //Serial.println("Starting test");
+
+    char_();
+    return;
 
     uint16_t *buf = (uint16_t*)malloc(image_test_size[2]);
     memcpy_P(buf, image_test, image_test_size[2]);
@@ -156,7 +192,7 @@ void loop()
 {
     //Serial.println("Looping");
 
-    delay(25);
+    delay(5);
 
     #ifdef WIFI
         // if (!isWifiConnected && !isWifiConnecting && !isScanningNetworks)
@@ -169,6 +205,9 @@ void loop()
 
     //Serial.println("Testing AS5600");
 
+    test();
+    test();
+    test();
     test();
 
     static uint32_t lastTime = 0;
