@@ -14,6 +14,7 @@
 #include "Adafruit_GFX.h"
 #include "Adafruit_ILI9341.h"
 #include "nbSPI.h"
+#include "images.h"
 
 #define SDA_PIN D3
 #define SCL_PIN D4
@@ -35,6 +36,7 @@ const char *password = WIFI_PASSWORD;
 
 bool isWifiConnected = false;
 bool isWifiConnecting = false;
+bool isScanningNetworks = false;
 
 #ifdef I2C
     AS5600 as5600(&Wire);
@@ -56,7 +58,7 @@ enum {E_FONT_BTN,MAX_FONT}; // Use separate enum for fonts, MAX_FONT at end
 // gslc_tsFont                 m_asFont[MAX_FONT];
 // gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 
-static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
+//static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
 
 // Button callbacks
 // - This function gets called when the button is pressed
@@ -123,6 +125,7 @@ void setup()
     *((volatile uint32_t*) 0x60000900) &= ~(1); // Disable hardware WDT
 
     tft.begin();
+
     // tft.setAddrWindow(0, 0, 200, 200);
 
     Serial.begin(115200);
@@ -140,34 +143,6 @@ void setup()
     
     //tests();
 
-    uint16_t buf[100];
-
-    while (true) {
-        tft.startWrite();
-        tft.setAddrWindow(rand() % 200, rand() % 200, 10, 10);
-        uint16_t color;
-        switch (rand() % 4)
-        {
-            case 0: color = ILI9341_BLUE; break;
-            case 1: color = ILI9341_GREEN; break;
-            case 2: color = ILI9341_RED; break;
-            default: color = ILI9341_WHITE; break;
-        }
-        for (int i = 0; i < 100; i++) {
-            buf[i] = color++;
-        }
-        // switch (rand() % 3) {
-        //     case 0: tft.writeColor(ILI9341_BLUE, 25); break;
-        //     case 1: tft.writeColor(ILI9341_GREEN, 25); break;
-        //     case 2: tft.writeColor(ILI9341_RED, 25); break;
-        // }
-        nbSPI_writeBytes((uint8_t*) buf, 100 * 2);
-        while (nbSPI_isBusy()) {
-            delayMicroseconds(5);
-        };
-        tft.endWrite();
-        delay(1);
-    }
 
 
     #ifdef WIFI
@@ -182,6 +157,7 @@ void setup()
             Serial.println("Connected to WiFi");
         });
     #endif
+
 
    // initGUI();
     
@@ -218,23 +194,63 @@ void setup()
     #endif
 }
 
+void test() {
+    //Serial.println("Starting test");
+
+    uint16_t *buf = (uint16_t*)malloc(image_test_size[2]);
+    memcpy_P(buf, image_test, image_test_size[2]);
+            //while (true) {
+        tft.startWrite();
+        tft.setAddrWindow(rand() % 130, rand() % 220, image_test_size[0], image_test_size[1]);
+        // uint16_t color;
+        // switch (rand() % 4)
+        // {
+        //     case 0: color = ILI9341_BLUE; break;
+        //     case 1: color = ILI9341_GREEN; break;
+        //     case 2: color = ILI9341_RED; break;
+        //     default: color = ILI9341_WHITE; break;
+        // }
+        // for (int i = 0; i < 50 * 50; i++) {
+        //     buf[i] = color++;
+        // }
+        // switch (rand() % 3) {
+        //     case 0: tft.writeColor(ILI9341_BLUE, 25); break;
+        //     case 1: tft.writeColor(ILI9341_GREEN, 25); break;
+        //     case 2: tft.writeColor(ILI9341_RED, 25); break;
+        // }
+        nbSPI_writeBytes((uint8_t*) buf, image_test_size[2]);
+        while (nbSPI_isBusy()) {
+            delayMicroseconds(5);
+        };
+        tft.endWrite();
+        //delay(1);
+    //}
+    free(buf);
+
+    //Serial.println("Test done");
+}
+
 void loop()
 {
+    //Serial.println("Looping");
     // gslc_DrawFillCircle(&m_gui, rand() % 200, rand() % 300, 20, GSLC_COL_BLUE);
     // gslc_DrawFillCircle(&m_gui, rand() % 200, rand() % 300, 20, GSLC_COL_GREEN);
     // gslc_Update(&m_gui);
 
-    delay(100);
+    delay(25);
 
     #ifdef WIFI
-        if (!isWifiConnected && !isWifiConnecting)
-        {
-            scanNetworks();
-            return;
-        }
+        // if (!isWifiConnected && !isWifiConnecting && !isScanningNetworks)
+        // {
+        //     isScanningNetworks = true;
+        //     scanNetworks();
+        //     return;
+        // }
     #endif
 
     //Serial.println("Testing AS5600");
+
+    test();
 
     static uint32_t lastTime = 0;
 
@@ -246,7 +262,7 @@ void loop()
 
     // put your main code here, to run repeatedly:
     //Serial.println("Hello, world!");
-    delay(100);
+///    delay(100);
 
     // using periodic = esp8266::polledTimeout::periodicMs;
     // static periodic nextPing(1000);
