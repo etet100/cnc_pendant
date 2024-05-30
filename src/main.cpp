@@ -21,6 +21,7 @@
 #ifdef WIFI
     #include <ESP8266WiFi.h>
 #endif
+#include "FT6236G.h"
 
 // const int16_t I2C_MASTER = 0x42;
 // const int16_t I2C_SLAVE = 0x08;
@@ -39,7 +40,27 @@ bool isWifiConnecting = false;
 bool isScanningNetworks = false;
 
 #ifdef I2C
+    #define I2C_SCL -1
+    #define I2C_SDA -1
+    FT6236G touch;
     AS5600 as5600(&Wire);
+#endif
+
+#ifdef I2C
+int getTouch(uint16_t *pPoints)
+{
+  TOUCHINFO ti;
+  if (touch.getSamples(&ti) != FT_SUCCESS)
+     return 0; // something went wrong
+    if (pPoints) {
+      // swap X/Y since the display is used 90 degrees rotated
+      pPoints[0] = ti.x[0];
+      pPoints[1] = ti.y[0];
+      pPoints[2] = ti.x[1];
+      pPoints[3] = ti.y[1];
+    }
+  return ti.count;
+} /* getTouch() */
 #endif
 
 Adafruit_ILI9341 tft = Adafruit_ILI9341(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
@@ -96,6 +117,7 @@ void setup()
     #ifdef I2C
         Wire.begin(SDA_PIN, SCL_PIN); // join i2c bus (address optional for master)
         Wire.setClock(100000);        // 400kHz I2C clock. Comment this line if having compilation difficulties
+        touch.init(I2C_SDA, I2C_SCL, false, 400000);
     #endif
 
     #ifdef WIFI
@@ -299,6 +321,21 @@ void loop()
 
     if (millis() - lastTime >= 500)
     {
+        uint16_t points[4];
+        int i;
+
+        if (i = getTouch(points)) {
+            // obd.setCursor(0, 24);
+            // obd.printf("A %d, %d   \n", points[0], points[1]);
+            char buf[50];
+            sprintf(buf, "A %d, %d", points[0], points[1]);
+            Serial.print(buf);
+            if (i == 2) {
+                sprintf(buf, "B %d, %d", points[2], points[3]);
+                Serial.print(buf);
+            }
+        }
+
         lastTime = millis();
         //Serial.println(as5600.geCumulativePosition());
 
