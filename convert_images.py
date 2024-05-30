@@ -19,6 +19,8 @@ def convert_image(image):
     image_name = Path(image).stem
     with Image.open(image) as im:
         print("%s (%d x %d)" % (image, im.size[0], im.size[1]))
+        if im.mode != "RGB":
+            im = im.convert("RGB")
         file = open("include\\images\\" + image_name + ".h", "w")
         file.write("#include \"Arduino.h\"\n")
         file.write("\n")
@@ -50,7 +52,7 @@ def find_images():
     file.write("#pragma once\n")
     file.write("\n")
 
-    for image in glob.glob("images/*.png") + glob.glob("images/*.bmp"):
+    for image in glob.glob("images/*.png") + glob.glob("images/*.bmp") + glob.glob("images/*.jpg"):
         image_name = convert_image(image)
         file.write("#include \"images/%s.h\" // %s\n" % (image_name, os.path.basename(image)))
     file.write("\n")
@@ -174,7 +176,8 @@ def generate_font(font_path, font_size):
 
 print("--------------------------------")
 print("Generating fonts images")
-generate_font("fonts/7seg.ttf", 40) # DSEG7Classic-Bold.ttf
+#generate_font("fonts/7seg.ttf", 40) # DSEG7Classic-Bold.ttf
+generate_font("fonts/7seg.ttf", 30) # DSEG7Classic-Bold.ttf
 print("Converting images to C arrays...")
 find_images()
 print("--------------------------------")

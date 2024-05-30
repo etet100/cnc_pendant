@@ -31,6 +31,7 @@ const char *password = WIFI_PASSWORD;
 #ifdef WIFI
     WiFiEventHandler wifiGotIPHandler;
     WiFiEventHandler wifiConnectedHandler;
+    WiFiClient wifiClient;
 #endif
 
 bool isWifiConnected = false;
@@ -44,6 +45,7 @@ bool isScanningNetworks = false;
 Adafruit_ILI9341 tft = Adafruit_ILI9341(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
 
 void tests();
+void drawImage(uint16_t x, uint16_t y, const uint16_t *image, const uint8_t w, const uint8_t h);
 
 void setup()
 {
@@ -84,6 +86,9 @@ void setup()
         wifiConnectedHandler = WiFi.onStationModeConnected([](const WiFiEventStationModeConnected &event) {
             Serial.println("Connected to WiFi");
         });
+        WiFi.onStationModeConnected([](const WiFiEventStationModeConnected &event) {
+            Serial.println("Connected to WiFi");
+        });
     #endif
 
     //as5600.getAddress();
@@ -117,6 +122,31 @@ void setup()
         Serial.print("Connect: ");
         Serial.println(b);
     #endif
+
+    drawImage(5, 320 - 5 - 50, image_btn1, image_btn1_size[0], image_btn1_size[1]);
+    drawImage(5 + 60, 320 - 5 - 50, image_btn1, image_btn1_size[0], image_btn1_size[1]);
+    drawImage(5 + 120, 320 - 5 - 50, image_btn1, image_btn1_size[0], image_btn1_size[1]);
+    drawImage(5 + 180, 320 - 5 - 50, image_btn1, image_btn1_size[0], image_btn1_size[1]);
+
+    drawImage(5, 320 - 5 - 50 - 55, image_btn1, image_btn1_size[0], image_btn1_size[1]);
+    drawImage(5 + 60, 320 - 5 - 50 - 55, image_btn1, image_btn1_size[0], image_btn1_size[1]);
+    drawImage(5 + 120, 320 - 5 - 50 - 55, image_btn1, image_btn1_size[0], image_btn1_size[1]);
+    drawImage(5 + 180, 320 - 5 - 50 - 55, image_btn1, image_btn1_size[0], image_btn1_size[1]);
+}
+
+void drawImage(uint16_t x, uint16_t y, const uint16_t* image, const uint8_t w, const uint8_t h)
+{
+    uint16_t size = w * h * 2;
+    uint16_t* buf = (uint16_t*)malloc(size);
+    memcpy_P(buf, image, size);
+    tft.startWrite();
+    tft.setAddrWindow(x, y, w, h);
+    nbSPI_writeBytes((uint8_t*)buf, size);
+    while (nbSPI_isBusy()) {
+        delayMicroseconds(3);
+    };
+    tft.endWrite();
+    free(buf);
 }
 
 void drawChar(uint16_t x, uint16_t y, byte char_) {
@@ -156,7 +186,7 @@ void drawChar(uint16_t x, uint16_t y, byte char_) {
 void drawNumber(uint16_t x, uint16_t y, int number) {
     char buf[10];
     sprintf(buf, "%d", number);
-    for (int i = 0; i < strlen(buf); i++) {
+    for (size_t i = 0; i < strlen(buf); i++) {
         drawChar(x + i * 32, y, buf[i]);
     }
 }
@@ -232,6 +262,16 @@ void test() {
     //Serial.println("Test done");
 }
 
+uint16_t* image_btn1_() {
+    static uint8_t im = 0;
+    switch (im++ % 3) {
+        case 0: return (uint16_t*)image_btn1;
+        case 1: return (uint16_t*)image_btn2;
+        case 2: return (uint16_t*)image_btn3;
+    }
+    return 0;
+}
+
 void loop()
 {
     //Serial.println("Looping");
@@ -253,14 +293,39 @@ void loop()
 
     drawNumber(5, 5, number+=5);
     drawNumber(5, 55, number+=2);
-    drawNumber(5, 105, number+=100);
+    drawNumber(5, 105, as5600.getCumulativePosition());
 
     static uint32_t lastTime = 0;
 
-    if (millis() - lastTime >= 100)
+    if (millis() - lastTime >= 500)
     {
         lastTime = millis();
-        Serial.println(as5600.getCumulativePosition());
+        //Serial.println(as5600.geCumulativePosition());
+
+        drawImage(5, 320 - 5 - 50, image_btn1_(), image_btn1_size[0], image_btn1_size[1]);
+        drawImage(5 + 60, 320 - 5 - 50, image_btn1_(), image_btn1_size[0], image_btn1_size[1]);
+        drawImage(5 + 120, 320 - 5 - 50, image_btn1_(), image_btn1_size[0], image_btn1_size[1]);
+        drawImage(5 + 180, 320 - 5 - 50, image_btn1_(), image_btn1_size[0], image_btn1_size[1]);
+
+        drawImage(5, 320 - 5 - 50 - 55, image_btn1_(), image_btn1_size[0], image_btn1_size[1]);
+        drawImage(5 + 60, 320 - 5 - 50 - 55, image_btn1_(), image_btn1_size[0], image_btn1_size[1]);
+        drawImage(5 + 120, 320 - 5 - 50 - 55, image_btn1_(), image_btn1_size[0], image_btn1_size[1]);
+        drawImage(5 + 180, 320 - 5 - 50 - 55, image_btn1_(), image_btn1_size[0], image_btn1_size[1]);
+
+        if (WiFi.status() == WL_CONNECTED && !wifiClient.connected()) {
+            Serial.println("Connecting to 192.168.1.2");
+            if (wifiClient.connect("192.168.1.2", 5555)) {
+                Serial.println("Connected");
+            } else {
+                Serial.println("Connection failed");
+            }
+        } else if (wifiClient.connected()) {
+            wifiClient.print("Hello, world!");
+            while (wifiClient.available()) {
+                char ch = static_cast<char>(wifiClient.read());
+                Serial.println(ch);
+            }
+        }
     }
 
     // put your main code here, to run repeatedly:
