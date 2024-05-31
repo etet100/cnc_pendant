@@ -4,8 +4,9 @@
 #include <SPI.h>
 #define I2C
 #ifdef I2C
-#include <Wire.h>
-#include "AS5600.h"
+    #include <Wire.h>
+    #include "AS5600.h"
+    #include "Touch.h"
 #endif
 #include "../config.h"
 #include "Adafruit_GFX.h"
@@ -15,13 +16,10 @@
 #include "screen.h"
 #include "fonts/font.h"
 
-#define SDA_PIN D3
-#define SCL_PIN D4
 #define WIFI 1
 #ifdef WIFI
     #include <ESP8266WiFi.h>
 #endif
-#include "FT6236G.h"
 
 // const int16_t I2C_MASTER = 0x42;
 // const int16_t I2C_SLAVE = 0x08;
@@ -40,27 +38,10 @@ bool isWifiConnecting = false;
 bool isScanningNetworks = false;
 
 #ifdef I2C
-    #define I2C_SCL -1
-    #define I2C_SDA -1
-    FT6236G touch;
+    #define SDA_PIN D3
+    #define SCL_PIN D4
     AS5600 as5600(&Wire);
-#endif
-
-#ifdef I2C
-int getTouch(uint16_t *pPoints)
-{
-  TOUCHINFO ti;
-  if (touch.getSamples(&ti) != FT_SUCCESS)
-     return 0; // something went wrong
-    if (pPoints) {
-      // swap X/Y since the display is used 90 degrees rotated
-      pPoints[0] = ti.x[0];
-      pPoints[1] = ti.y[0];
-      pPoints[2] = ti.x[1];
-      pPoints[3] = ti.y[1];
-    }
-  return ti.count;
-} /* getTouch() */
+    Touch touch(&Wire);
 #endif
 
 Adafruit_ILI9341 tft = Adafruit_ILI9341(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
@@ -113,13 +94,10 @@ void setup()
 
     //as5600.getAddress();
 
-    #ifdef I2C
+    #ifdef WIFI
         Wire.begin(SDA_PIN, SCL_PIN); // join i2c bus (address optional for master)
         Wire.setClock(100000);        // 400kHz I2C clock. Comment this line if having compilation difficulties
-        touch.init(I2C_SDA, I2C_SCL, false, 400000);
-    #endif
 
-    #ifdef WIFI
         WiFi.mode(WIFI_STA);
         WiFi.begin(ssid, password);
     #endif
@@ -139,6 +117,8 @@ void setup()
     #ifdef I2C
         as5600.begin();
         int b = as5600.isConnected();
+
+        touch.begin();
 
         Serial.print("Connect: ");
         Serial.println(b);
@@ -318,22 +298,9 @@ void loop()
 
     static uint32_t lastTime = 0;
 
-    if (millis() - lastTime >= 500)
+    if (millis() - lastTime >= 100)
     {
-        uint16_t points[4];
-        int i;
-
-        if (i = getTouch(points)) {
-            // obd.setCursor(0, 24);
-            // obd.printf("A %d, %d   \n", points[0], points[1]);
-            char buf[50];
-            sprintf(buf, "A %d, %d", points[0], points[1]);
-            Serial.print(buf);
-            if (i == 2) {
-                sprintf(buf, "B %d, %d", points[2], points[3]);
-                Serial.print(buf);
-            }
-        }
+        touch.loop();
 
         lastTime = millis();
         //Serial.println(as5600.geCumulativePosition());
@@ -356,10 +323,11 @@ void loop()
                 Serial.println("Connection failed");
             }
         } else if (wifiClient.connected()) {
-            wifiClient.print("Hello, world!");
-            while (wifiClient.available()) {
-                char ch = static_cast<char>(wifiClient.read());
-                Serial.println(ch);
+            //wifiClient.print("Hello, world!");
+            wifiClient.setTimeout(1);
+            if (wifiClient.available()) {
+                String s = wifiClient.readString();
+                Serial.println(s);
             }
         }
     }
