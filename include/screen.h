@@ -1,15 +1,20 @@
 #ifndef SCREEN_H_
 #define SCREEN_H_
 
-#define ADAGFX_PIN_CS       D8    // Display chip select
-#define ADAGFX_PIN_DC       D2    // Display SPI data/command
-#define ADAGFX_PIN_RST      D1    // Display Reset
+#include <Adafruit_ILI9341.h>
+#include "touch.h"
+#include "basepage.h"
 
 class Screen {
 public:
-    Screen();
+    Screen(Touch &touch);
+    void begin();
+    void loop();
 
 private:
+    Adafruit_ILI9341 tft;
+    Touch &touch;
+    BasePage *currentPage;
 };
 
 #endif // SCREEN_H_
