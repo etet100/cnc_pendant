@@ -17,34 +17,14 @@
 
 // #include "fonts/font.h"
 
-#define WIFI 1
-#ifdef WIFI
-    // #include <ESP8266WiFi.h>
-#endif
-
 // const int16_t I2C_MASTER = 0x42;
 // const int16_t I2C_SLAVE = 0x08;
 
-// const char *ssid = WIFI_SSID;
-// const char *password = WIFI_PASSWORD;
+#define SDA_PIN D3
+#define SCL_PIN D4
+AS5600 as5600(&Wire);
 
-#ifdef WIFI
-    // WiFiEventHandler wifiGotIPHandler;
-    // WiFiEventHandler wifiConnectedHandler;
-    // WiFiClient wifiClient;
-#endif
-
-bool isWifiConnected = false;
-bool isWifiConnecting = false;
-bool isScanningNetworks = false;
-
-#ifdef I2C
-    #define SDA_PIN D3
-    #define SCL_PIN D4
-    AS5600 as5600(&Wire);
-    Touch touch(&Wire);
-#endif
-
+Touch touch(&Wire);
 Screen screen(touch);
 WiFiCommmunicator wifiCommmunicator;
 // Adafruit_ILI9341 tft = Adafruit_ILI9341(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST);
@@ -53,8 +33,11 @@ WiFiCommmunicator wifiCommmunicator;
 
 void setup()
 {
+    setupSerial();
     setupWatchdog();
+    setupTwoWire();
 
+    touch.begin();
     screen.begin();
 
     // tft.begin();
@@ -63,7 +46,6 @@ void setup()
 
     // tft.setAddrWindow(0, 0, 200, 200);
 
-    Serial.begin(115200);
     // SPI.pins(14, 12, 13, 15); // SCK, MISO, MOSI, SS
     // SPI.setHwCs(true);
     // SPI.begin();
@@ -78,29 +60,9 @@ void setup()
     
     //tests();
 
-
-
-    #ifdef WIFI
-        // wifiGotIPHandler = WiFi.onStationModeGotIP([](const WiFiEventStationModeGotIP &event) {
-        //     Serial.print("Station connected, IP: ");
-        //     Serial.println(WiFi.localIP());
-
-        //     isWifiConnected = true;
-        //     isWifiConnecting = false;
-        // });
-        // wifiConnectedHandler = WiFi.onStationModeConnected([](const WiFiEventStationModeConnected &event) {
-        //     Serial.println("Connected to WiFi");
-        // });
-        // WiFi.onStationModeConnected([](const WiFiEventStationModeConnected &event) {
-        //     Serial.println("Connected to WiFi");
-        // });
-    #endif
-
     //as5600.getAddress();
 
     #ifdef WIFI
-        Wire.begin(SDA_PIN, SCL_PIN); // join i2c bus (address optional for master)
-        Wire.setClock(100000);        // 400kHz I2C clock. Comment this line if having compilation difficulties
 
         // WiFi.mode(WIFI_STA);
         // WiFi.begin(ssid, password);
@@ -122,8 +84,6 @@ void setup()
         as5600.begin();
         int b = as5600.isConnected();
 
-        touch.begin();
-
         Serial.print("Connect: ");
         Serial.println(b);
     #endif
@@ -137,6 +97,17 @@ void setup()
     // drawImage(5 + 60, 320 - 5 - 50 - 55, image_btn1, image_btn1_size[0], image_btn1_size[1]);
     // drawImage(5 + 120, 320 - 5 - 50 - 55, image_btn1, image_btn1_size[0], image_btn1_size[1]);
     // drawImage(5 + 180, 320 - 5 - 50 - 55, image_btn1, image_btn1_size[0], image_btn1_size[1]);
+}
+
+void setupSerial()
+{
+    Serial.begin(115200);
+}
+
+void setupTwoWire()
+{
+    Wire.begin(SDA_PIN, SCL_PIN); // join i2c bus (address optional for master)
+    Wire.setClock(200000); // 400kHz I2C clock. Comment this line if having compilation difficulties
 }
 
 void setupWatchdog()
@@ -289,18 +260,10 @@ void loop()
 
     delay(5);
 
-    #ifdef WIFI
-        // if (!isWifiConnected && !isWifiConnecting && !isScanningNetworks)
-        // {
-        //     isScanningNetworks = true;
-        //     scanNetworks();
-        //     return;
-        // }
-    #endif
 
     //Serial.println("Testing AS5600");
 
-    static int number = 0;
+    //static int number = 0;
 
     // drawNumber(5, 5, number+=5);
     // drawNumber(5, 55, number+=2);
@@ -344,58 +307,4 @@ void loop()
         //     }
         // }
     }
-
-    // put your main code here, to run repeatedly:
-    //Serial.println("Hello, world!");
-///    delay(100);
-
-    // using periodic = esp8266::polledTimeout::periodicMs;
-    // static periodic nextPing(1000);
-
-    // if (nextPing)
-    // {
-    //     Wire.requestFrom(I2C_SLAVE, 6); // request 6 bytes from slave device #8
-
-    //     while (Wire.available())
-    //     {                         // slave may send less than requested
-    //         char c = Wire.read(); // receive a byte as character
-    //         Serial.print(c);      // print the character
-    //     }
-    // }
 }
-
-#ifdef WIFI
-void scanNetworks()
-{
-    String ssid;
-    int32_t rssi;
-    uint8_t encryptionType;
-    uint8_t *bssid;
-    int32_t channel;
-    bool hidden;
-    int scanResult = WiFi.scanNetworks();
-    if (scanResult == 0)
-    {
-        Serial.println(F("No networks found"));
-    }
-    else if (scanResult > 0)
-    {
-        Serial.printf(PSTR("%d networks found:\n"), scanResult);
-
-        // Print unsorted scan results
-        for (int8_t i = 0; i < scanResult; i++)
-        {
-            WiFi.getNetworkInfo(i, ssid, encryptionType, rssi, bssid, channel, hidden);
-            Serial.printf(PSTR("  %02d: [CH %02d] [%02X:%02X:%02X:%02X:%02X:%02X] %ddBm %c %c %s\n"), i, channel, bssid[0], bssid[1], bssid[2], bssid[3], bssid[4], bssid[5], rssi, (encryptionType == ENC_TYPE_NONE) ? ' ' : '*', hidden ? 'H' : 'V', ssid.c_str());
-
-            yield();
-        }
-    }
-    else
-    {
-        Serial.printf(PSTR("WiFi scan error %d"), scanResult);
-    }
-
-    isWifiConnecting = true;
-}
-#endif

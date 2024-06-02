@@ -10,6 +10,7 @@ public:
     Screen(Touch &touch);
     void begin();
     void loop();
+    void setCurrentPage(BasePage *page);
 
 private:
     Adafruit_ILI9341 tft;

@@ -9,6 +9,7 @@
 
 Screen::Screen(Touch &touch) : tft(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST), touch(touch)
 {
+    currentPage = nullptr;
 }
 
 void Screen::begin()
@@ -21,4 +22,12 @@ void Screen::begin()
 void Screen::loop()
 {
     touch.loop();
+    if (currentPage != nullptr) {
+        currentPage->draw();
+    }
+}
+
+void Screen::setCurrentPage(BasePage *page) { 
+    page->setTFT(&tft);
+    currentPage = page; 
 }

@@ -2,6 +2,7 @@
 #define MAINPAGE_H_
 
 #include "basepage.h"
+#include <Adafruit_ILI9341.h>
 
 class MainPage : public BasePage {
 public:
