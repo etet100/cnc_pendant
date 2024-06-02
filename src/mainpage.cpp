@@ -2,8 +2,21 @@
 #include "images.h"
 #include "drawing.h"
 
-MainPage::MainPage()
+static int value = 0;
+
+MainPage::MainPage() : BasePage()
 {
+    addTouchZone(new TouchZone(5, 5, 240 - 10, 200));
+}
+
+void MainPage::processTouchZone(TouchZone* zone)
+{
+    Serial.println("Touched main page zone");
+    value += rand() % 10;
+    value *= rand() % 3;
+    if (value > 999999) {
+        value = 0;
+    }
 }
 
 static uint16_t* image_btn1_() {
@@ -27,4 +40,8 @@ void MainPage::draw()
     drawImage(tft, 5 + 60, 320 - 5 - 50 - 55, image_btn1_(), image_btn1_size[0], image_btn1_size[1]);
     drawImage(tft, 5 + 120, 320 - 5 - 50 - 55, image_btn1_(), image_btn1_size[0], image_btn1_size[1]);
     drawImage(tft, 5 + 180, 320 - 5 - 50 - 55, image_btn1_(), image_btn1_size[0], image_btn1_size[1]);
+
+    drawNumber(tft, 25, 5, 12340, 6);
+    drawNumber(tft, 25, 5 + 40, value, 6);
+    drawNumber(tft, 25, 5 + 40 + 40, 0, 6);
 }

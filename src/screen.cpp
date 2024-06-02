@@ -27,6 +27,10 @@ void Screen::loop()
 {
     touch.loop();
     if (currentPage != nullptr) {
+        if (touch.isTouched()) {
+            TS_Point touchPoint = touch.getPoint();
+            currentPage->processTouch(touchPoint.x, touchPoint.y);
+        }
         currentPage->draw();
     }
 }

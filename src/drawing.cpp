@@ -30,7 +30,8 @@ void drawImage(
 void drawChar(
     Adafruit_ILI9341* tft,
     uint16_t x, uint16_t y,
-    byte char_
+    byte char_,
+    uint16_t color
 ) {
     if (char_ < 48 || char_ > 57) {
         return;
@@ -48,10 +49,10 @@ void drawChar(
     uint16_t *pos = buf;
     char font_byte = pgm_read_byte(font_data++);
     while (font_byte) {
-        uint8_t color = font_byte & 0b11;
+        uint8_t font_byte_color = font_byte & 0b11;
         font_byte >>= 2;
         while (font_byte--) {
-            *pos++ = color == 0 ? ILI9341_BLACK : ILI9341_WHITE;
+            *pos++ = font_byte_color == 0 ? ILI9341_BLACK : color;
         }
         font_byte = pgm_read_byte(font_data++);
     }
@@ -62,10 +63,18 @@ void drawChar(
     free(buf);
 }
 
-void drawNumber(Adafruit_ILI9341* tft, uint16_t x, uint16_t y, int number) {
+void drawNumber(Adafruit_ILI9341* tft, uint16_t x, uint16_t y, int number, int padWithZeroesTo) {
     char buf[10];
     sprintf(buf, "%d", number);
+    if (padWithZeroesTo > 0) {
+        int toPad = padWithZeroesTo - strlen(buf);
+        while (toPad-- > 0) {
+            drawChar(tft, x, y, '0', ILI9341_RED);
+            x += 28;
+        }
+    }
     for (size_t i = 0; i < strlen(buf); i++) {
-        drawChar(tft, x + i * 32, y, buf[i]);
+        drawChar(tft, x, y, buf[i]);
+        x += 28;
     }
 }
