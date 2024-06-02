@@ -6,13 +6,13 @@
 
 class Touch {
 public:
-    Touch(TwoWire* wire);
+    Touch(TwoWire& wire);
     void begin();
     void loop();
 
 private:
-    TwoWire *wire;
-    Adafruit_FT6206 *ctp;
+    TwoWire& wire;
+    Adafruit_FT6206* ctp;
 };
 
 #endif // TOUCH_H

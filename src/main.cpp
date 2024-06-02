@@ -7,14 +7,15 @@
 #include "../config.h"
 #include "screen.h"
 #include "wifi.h"
+#include "wheel.h"
 
 #define SDA_PIN D3
 #define SCL_PIN D4
-AS5600 as5600(&Wire);
 
-Touch touch(&Wire);
+Touch touch(Wire);
 Screen screen(touch);
 WiFiCommmunicator wifiCommmunicator;
+Wheel wheel(Wire);
 
 void setup()
 {
@@ -22,17 +23,12 @@ void setup()
     setupWatchdog();
     setupTwoWire();
 
+    wheel.begin();
     touch.begin();
     screen.begin();
 
     Serial.println();
     Serial.print("Wait for WiFi... ");
-
-    as5600.begin();
-    bool as5600connected = as5600.isConnected();
-
-    Serial.print("Connect: ");
-    Serial.println(as5600connected);
 }
 
 void setupSerial()
