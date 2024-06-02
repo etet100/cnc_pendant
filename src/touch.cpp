@@ -6,11 +6,15 @@ Touch::Touch(TwoWire& wire): wire(wire)
 
 void Touch::begin()
 {
+    Serial.println("Initializing touch...");
+
     ctp = new Adafruit_FT6206();
     if (!ctp->begin(40, &wire)) { // pass in 'sensitivity' coefficient and I2C bus
-        Serial.println("Couldn't start FT6206 touchscreen controller");
+        Serial.println(" Result: error");
         while (1)
             delay(10);
+    } else {
+        Serial.println(" Result: success");
     }
 }
 

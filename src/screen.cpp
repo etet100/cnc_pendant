@@ -14,9 +14,13 @@ Screen::Screen(Touch &touch) : tft(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST)
 
 void Screen::begin()
 {
+    Serial.println("Initializing screen...");
+
     tft.begin();
     tft.setRotation(2);
     tft.fillRect(0, 0, 240, 320, ILI9341_BLACK);
+
+    Serial.println(" Result: initialized");
 }
 
 void Screen::loop()

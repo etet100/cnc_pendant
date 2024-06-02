@@ -1,20 +1,21 @@
 #include <Arduino.h>
 #include <HardwareSerial.h>
-#include <PolledTimeout.h>
-#include <SPI.h>
 #include <Wire.h>
-#include "AS5600.h"
-#include "../config.h"
 #include "screen.h"
 #include "wifi.h"
+#include "serial.h"
+#include "mainpage.h"
 #include "wheel.h"
 
 #define SDA_PIN D3
 #define SCL_PIN D4
+#define I2C_CLOCK 400000
 
 Touch touch(Wire);
 Screen screen(touch);
 WiFiCommmunicator wifiCommmunicator;
+SerialCommunicator serialCommunicator;
+MainPage mainPage;
 Wheel wheel(Wire);
 
 void setup()
@@ -26,9 +27,7 @@ void setup()
     wheel.begin();
     touch.begin();
     screen.begin();
-
-    Serial.println();
-    Serial.print("Wait for WiFi... ");
+    screen.setCurrentPage(&mainPage);
 }
 
 void setupSerial()
@@ -38,12 +37,16 @@ void setupSerial()
 
 void setupTwoWire()
 {
-    Wire.begin(SDA_PIN, SCL_PIN); // join i2c bus (address optional for master)
-    Wire.setClock(200000); // 400kHz I2C clock. Comment this line if having compilation difficulties
+    Serial.println("Initializing I2C...");
+
+    Wire.begin(SDA_PIN, SCL_PIN);
+    Wire.setClock(I2C_CLOCK);
 }
 
 void setupWatchdog()
 {
+    Serial.println("Disabling watchdog...");
+
     ESP.wdtDisable();
     *((volatile uint32_t*)0x60000900) &= ~(1); // Disable hardware WDT
 }
@@ -58,6 +61,7 @@ void loop()
     {
         screen.loop();
         wifiCommmunicator.loop();
+        serialCommunicator.loop();
 
         lastTime = millis();
     }
