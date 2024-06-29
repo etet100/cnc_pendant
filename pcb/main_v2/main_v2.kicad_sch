@@ -2546,6 +2546,12 @@
 		)
 	)
 	(junction
+		(at 67.31 119.38)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "08198f9f-92cc-407c-8787-4ede33012e34")
+	)
+	(junction
 		(at 152.4 143.51)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2580,6 +2586,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "4375f1c6-b450-49b0-b574-234583893a6a")
+	)
+	(junction
+		(at 67.31 96.52)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "4d4f126c-0c97-4337-9f72-f6db5d5ffba8")
 	)
 	(junction
 		(at 175.26 85.09)
@@ -3237,6 +3249,16 @@
 	)
 	(wire
 		(pts
+			(xy 60.96 96.52) (xy 67.31 96.52)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "47d01101-f86c-44ac-a629-546e9a415726")
+	)
+	(wire
+		(pts
 			(xy 138.43 78.74) (xy 138.43 104.14)
 		)
 		(stroke
@@ -3414,6 +3436,16 @@
 			(type default)
 		)
 		(uuid "6a304a6d-35a7-400a-97d3-099fb6f27812")
+	)
+	(wire
+		(pts
+			(xy 60.96 119.38) (xy 67.31 119.38)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6b2cb597-9421-430f-8300-2630e6eb080b")
 	)
 	(wire
 		(pts
@@ -3817,6 +3849,16 @@
 	)
 	(wire
 		(pts
+			(xy 60.96 111.76) (xy 60.96 119.38)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b431b5a8-f399-473c-b76e-48081786d56a")
+	)
+	(wire
+		(pts
 			(xy 162.56 101.6) (xy 162.56 86.36)
 		)
 		(stroke
@@ -3874,6 +3916,16 @@
 			(type default)
 		)
 		(uuid "bd20cc0e-f321-4361-acb8-c95f90ff1355")
+	)
+	(wire
+		(pts
+			(xy 60.96 104.14) (xy 60.96 96.52)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bee25ee3-f9c0-4f9a-a890-ea5700ff7938")
 	)
 	(wire
 		(pts
@@ -4929,6 +4981,75 @@
 			(project ""
 				(path "/c21fd4e2-9981-4ff5-91c1-24534bdcc8f5"
 					(reference "J2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C_Polarized")
+		(at 60.96 107.95 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "5a4ea054-c1e2-4438-9d89-ddfdd0e4be47")
+		(property "Reference" "C6"
+			(at 64.77 105.7909 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100uF"
+			(at 61.976 110.744 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_THT:CP_Radial_D6.3mm_P2.50mm"
+			(at 61.9252 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 60.96 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Polarized capacitor"
+			(at 60.96 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "91829121-5ea7-4f53-bcce-fcc4ae54b79e")
+		)
+		(pin "2"
+			(uuid "738ba5fb-b013-413e-9c97-aa774fd88c70")
+		)
+		(instances
+			(project "main_v2"
+				(path "/c21fd4e2-9981-4ff5-91c1-24534bdcc8f5"
+					(reference "C6")
 					(unit 1)
 				)
 			)
