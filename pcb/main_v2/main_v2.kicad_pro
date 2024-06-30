@@ -469,7 +469,7 @@
         "name": "Default",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.4064,
+        "track_width": 0.508,
         "via_diameter": 1.6002,
         "via_drill": 0.254,
         "wire_width": 6

@@ -224,7 +224,7 @@
 			(type default)
 		)
 		(fill none)
-		(layer "Margin")
+		(layer "User.1")
 		(uuid "598f3724-cef3-4cbb-9b46-458e56f9d416")
 	)
 	(fp_text user "D6"
@@ -460,7 +460,7 @@
 	)
 	(pad "2" thru_hole oval
 		(at 0 15.24)
-		(size 2.1 1.524)
+		(size 3 1.8)
 		(drill 0.762)
 		(layers "*.Cu" "*.Mask" "F.SilkS")
 		(remove_unused_layers no)
@@ -469,7 +469,7 @@
 	)
 	(pad "3" thru_hole oval
 		(at 0 0)
-		(size 2.1 1.524)
+		(size 3 1.8)
 		(drill 0.762)
 		(layers "*.Cu" "*.Mask" "F.SilkS")
 		(remove_unused_layers no)
@@ -477,7 +477,7 @@
 	)
 	(pad "4" thru_hole oval
 		(at 0 2.54)
-		(size 2.1 1.524)
+		(size 3 1.8)
 		(drill 0.762)
 		(layers "*.Cu" "*.Mask" "F.SilkS")
 		(remove_unused_layers no)
@@ -486,7 +486,7 @@
 	)
 	(pad "5" thru_hole oval
 		(at 23.35 15.24)
-		(size 2.1 1.524)
+		(size 3 1.8)
 		(drill 0.762)
 		(layers "*.Cu" "*.Mask" "F.SilkS")
 		(remove_unused_layers no)
@@ -495,7 +495,7 @@
 	)
 	(pad "6" thru_hole oval
 		(at 23.35 12.7)
-		(size 2.1 1.524)
+		(size 3 1.8)
 		(drill 0.762)
 		(layers "*.Cu" "*.Mask" "F.SilkS")
 		(remove_unused_layers no)
@@ -504,7 +504,7 @@
 	)
 	(pad "7" thru_hole oval
 		(at 23.35 10.16)
-		(size 2.1 1.524)
+		(size 3 1.8)
 		(drill 0.762)
 		(layers "*.Cu" "*.Mask" "F.SilkS")
 		(remove_unused_layers no)
@@ -513,7 +513,7 @@
 	)
 	(pad "8" thru_hole oval
 		(at 23.35 7.62)
-		(size 2.1 1.524)
+		(size 3 1.8)
 		(drill 0.762)
 		(layers "*.Cu" "*.Mask" "F.SilkS")
 		(remove_unused_layers no)
@@ -522,7 +522,7 @@
 	)
 	(pad "11" thru_hole oval
 		(at 0 12.7)
-		(size 2.1 1.524)
+		(size 3 1.8)
 		(drill 0.762)
 		(layers "*.Cu" "*.Mask" "F.SilkS")
 		(remove_unused_layers no)
@@ -531,7 +531,7 @@
 	)
 	(pad "12" thru_hole oval
 		(at 0 10.16)
-		(size 2.1 1.524)
+		(size 3 1.8)
 		(drill 0.762)
 		(layers "*.Cu" "*.Mask" "F.SilkS")
 		(remove_unused_layers no)
@@ -540,7 +540,7 @@
 	)
 	(pad "13" thru_hole oval
 		(at 0 7.62)
-		(size 2.1 1.524)
+		(size 3 1.8)
 		(drill 0.762)
 		(layers "*.Cu" "*.Mask" "F.SilkS")
 		(remove_unused_layers no)
@@ -549,7 +549,7 @@
 	)
 	(pad "14" thru_hole oval
 		(at 0 5.08)
-		(size 2.1 1.524)
+		(size 3 1.8)
 		(drill 0.762)
 		(layers "*.Cu" "*.Mask" "F.SilkS")
 		(remove_unused_layers no)
@@ -558,7 +558,7 @@
 	)
 	(pad "15" thru_hole oval
 		(at 23.35 5.08)
-		(size 2.1 1.524)
+		(size 3 1.8)
 		(drill 0.762)
 		(layers "*.Cu" "*.Mask" "F.SilkS")
 		(remove_unused_layers no)
@@ -567,7 +567,7 @@
 	)
 	(pad "16" thru_hole oval
 		(at 23.35 2.54)
-		(size 2.1 1.524)
+		(size 3 1.8)
 		(drill 0.762)
 		(layers "*.Cu" "*.Mask" "F.SilkS")
 		(remove_unused_layers no)
@@ -576,7 +576,7 @@
 	)
 	(pad "26" thru_hole oval
 		(at 23.35 17.78)
-		(size 2.1 1.524)
+		(size 3 1.8)
 		(drill 0.762)
 		(layers "*.Cu" "*.Mask" "F.SilkS")
 		(remove_unused_layers no)
@@ -585,7 +585,7 @@
 	)
 	(pad "28" thru_hole oval
 		(at 23.35 0)
-		(size 2.1 1.524)
+		(size 3 1.8)
 		(drill 0.762)
 		(layers "*.Cu" "*.Mask" "F.SilkS")
 		(remove_unused_layers no)
@@ -594,7 +594,7 @@
 	)
 	(pad "30" thru_hole oval
 		(at 0 17.78)
-		(size 2.1 1.524)
+		(size 3 1.8)
 		(drill 0.762)
 		(layers "*.Cu" "*.Mask" "F.SilkS")
 		(remove_unused_layers no)
