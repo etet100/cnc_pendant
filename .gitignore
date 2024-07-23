@@ -4,3 +4,9 @@
 .vscode/launch.json
 .vscode/ipch
 config.h
+pcb/main/main-backups
+pcb/main_nodemcu/main_nodemcu-backups
+pcb/main_nodemcu/main-backups
+pcb/main_v2/main_v2-backups
+pcb/main_v2/main-backups
+pcb/**/_autosave*

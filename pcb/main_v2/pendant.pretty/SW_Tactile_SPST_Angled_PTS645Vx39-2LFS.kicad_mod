@@ -401,6 +401,8 @@
 		(uuid "2e024ebc-6d16-4d31-9771-3cad9f5bd494")
 	)
 	(model "${KICAD8_3DMODEL_DIR}/Button_Switch_THT.3dshapes/SW_Tactile_SPST_Angled_PTS645Vx39-2LFS.wrl"
+		(hide yes)
+		(opacity 0.8000)
 		(offset
 			(xyz 0 0 0)
 		)
@@ -409,6 +411,17 @@
 		)
 		(rotate
 			(xyz 0 0 0)
+		)
+	)
+	(model "${KIPRJMOD}/TackSwitch.step"
+		(offset
+			(xyz 2.25 3.37 3)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 -90 180)
 		)
 	)
 )
