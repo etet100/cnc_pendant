@@ -52,7 +52,7 @@ void drawChar(
         uint8_t font_byte_color = font_byte & 0b11;
         font_byte >>= 2;
         while (font_byte--) {
-            *pos++ = font_byte_color == 0 ? ILI9341_BLACK : color;
+            *pos++ = font_byte_color == 0 ? BYTE_SWAP(ILI9341_BLACK) : color;
         }
         font_byte = pgm_read_byte(font_data++);
     }
@@ -63,18 +63,42 @@ void drawChar(
     free(buf);
 }
 
-void drawNumber(Adafruit_ILI9341* tft, uint16_t x, uint16_t y, int number, int padWithZeroesTo) {
-    char buf[10];
+void drawIntNumber(Adafruit_ILI9341* tft, uint16_t x, uint16_t y, int number, int padWithZeroesTo) {
+    char buf[8];
     sprintf(buf, "%d", number);
     if (padWithZeroesTo > 0) {
         int toPad = padWithZeroesTo - strlen(buf);
         while (toPad-- > 0) {
-            drawChar(tft, x, y, '0', ILI9341_RED);
-            x += 28;
+            drawChar(tft, x, y, '0', BYTE_SWAP(ILI9341_DARKGREY));
+            x += 25;
         }
     }
     for (size_t i = 0; i < strlen(buf); i++) {
         drawChar(tft, x, y, buf[i]);
-        x += 28;
+        if (buf[i] == '.') {
+            x += 10;
+        } else {
+            x += 25;
+        }
+    }
+}
+
+void drawFloatNumber(Adafruit_ILI9341* tft, uint16_t x, uint16_t y, float number, int padWithZeroesTo) {
+    char buf[8];
+    sprintf(buf, "%4.3f", number);
+    if (padWithZeroesTo > 0) {
+        int toPad = padWithZeroesTo - strlen(buf);
+        while (toPad-- > 0) {
+            drawChar(tft, x, y, '0', BYTE_SWAP(ILI9341_DARKGREY));
+            x += 25;
+        }
+    }
+    for (size_t i = 0; i < strlen(buf); i++) {
+        drawChar(tft, x, y, buf[i]);
+        if (buf[i] == '.') {
+            x += 10;
+        } else {
+            x += 25;
+        }
     }
 }

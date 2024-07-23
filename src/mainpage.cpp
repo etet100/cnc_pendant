@@ -1,6 +1,7 @@
 #include "mainpage.h"
 #include "images.h"
 #include "drawing.h"
+#include "state.h"
 
 static int value = 0;
 
@@ -41,7 +42,11 @@ void MainPage::draw()
     drawImage(tft, 5 + 120, 320 - 5 - 50 - 55, image_btn1_(), image_btn1_size[0], image_btn1_size[1]);
     drawImage(tft, 5 + 180, 320 - 5 - 50 - 55, image_btn1_(), image_btn1_size[0], image_btn1_size[1]);
 
-    drawNumber(tft, 25, 5, 12340, 6);
-    drawNumber(tft, 25, 5 + 40, value, 6);
-    drawNumber(tft, 25, 5 + 40 + 40, 0, 6);
+    // drawIntNumber(tft, 25, 5, 12340, 6);
+    // drawIntNumber(tft, 25, 5 + 40, value, 6);
+    // drawIntNumber(tft, 25, 5 + 40 + 40, 0, 6);
+
+    drawFloatNumber(tft, 33, 5, state.getPos(X), 8);
+    drawFloatNumber(tft, 33, 5 + 40, state.getPos(Y), 8);
+    drawFloatNumber(tft, 33, 5 + 40 + 40, state.getPos(Z), 8);
 }
