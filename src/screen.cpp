@@ -6,6 +6,7 @@
 #define ADAGFX_PIN_CS       D8    // Display chip select
 #define ADAGFX_PIN_DC       D2    // Display SPI data/command
 #define ADAGFX_PIN_RST      D1    // Display Reset
+#define SPI_FREQUENCY       30000000
 
 Screen::Screen(Touch &touch) : tft(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST), touch(touch)
 {
@@ -16,7 +17,7 @@ void Screen::begin()
 {
     Serial.println("Initializing screen...");
 
-    tft.begin();
+    tft.begin(SPI_FREQUENCY);
     tft.setRotation(2);
 
     clear();
