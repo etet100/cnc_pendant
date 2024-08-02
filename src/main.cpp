@@ -120,8 +120,6 @@ void setup()
     setupTwoWire();
 
     wheel.begin();
-    touch.begin();
-    screen.setCurrentPage(&mainPage);
 
     pca9536d.begin(Wire);
     if (pca9536d.isConnected())
@@ -159,6 +157,9 @@ void setup()
         Serial.println("ERROR: Can't find eeprom\nstopped...");
         while (1);
     }
+
+    touch.begin();
+
     screen.begin();
     screen.loop();
     pca9536d.write(LCD_BACKLIGHT_PIN, LOW);
