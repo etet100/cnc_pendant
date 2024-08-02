@@ -52,7 +52,10 @@ def find_images():
     file.write("#pragma once\n")
     file.write("\n")
 
-    for image in glob.glob("images/*.png") + glob.glob("images/*.bmp") + glob.glob("images/*.jpg"):
+    for image in glob.glob("images/*.png") + glob.glob("images/*.bmp") + glob.glob("images/*.jpg") + glob.glob("images/logo/*.png"):
+        if os.path.basename(image).startswith("_"):
+            print("skipping %s" % image)
+            continue
         image_name = convert_image(image)
         file.write("#include \"images/%s.h\" // %s\n" % (image_name, os.path.basename(image)))
     file.write("\n")

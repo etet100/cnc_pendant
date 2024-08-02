@@ -10,7 +10,9 @@ public:
     Screen(Touch &touch);
     void begin();
     void loop();
+    void clear();
     void setCurrentPage(BasePage *page);
+    Adafruit_ILI9341 &getTFT() { return tft; }
 
 private:
     Adafruit_ILI9341 tft;

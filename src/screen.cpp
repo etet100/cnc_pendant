@@ -18,7 +18,8 @@ void Screen::begin()
 
     tft.begin();
     tft.setRotation(2);
-    tft.fillRect(0, 0, 240, 320, ILI9341_BLACK);
+
+    clear();
 
     Serial.println(" Result: initialized");
 }
@@ -37,6 +38,11 @@ void Screen::loop()
         }
         currentPage->draw();
     }
+}
+
+void Screen::clear()
+{
+    tft.fillRect(0, 0, 240, 320, ILI9341_BLACK);
 }
 
 void Screen::setCurrentPage(BasePage *page) { 
