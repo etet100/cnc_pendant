@@ -200,8 +200,7 @@ void loop()
 
     static uint32_t lastTime = 0;
 
-    if (millis() - lastTime >= 100)
-    {
+    if (millis() - lastTime >= 50) {
         screen.loop();
         buttons.loop();
         if (buttons.isTopPressed()) {
