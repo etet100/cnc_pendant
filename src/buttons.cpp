@@ -17,6 +17,7 @@ void Buttons::begin()
     pca9536d.pinMode(BUTTON_TOP_PIN, INPUT);
     pca9536d.pinMode(BUTTON_BOTTOM_PIN, INPUT);
     pinMode(BUTTON_WHEEL_PIN, INPUT);
+    Serial.println(" Result: initialized");
 }
 
 void Buttons::loop()

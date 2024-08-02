@@ -145,6 +145,8 @@ void setup()
     screen.clear();
 
     buttons.begin();
+
+    Serial.println("Setup done");
 }
 
 void setupSerial()
@@ -178,6 +180,15 @@ void loop()
     {
         screen.loop();
         buttons.loop();
+        if (buttons.isTopPressed()) {
+            Serial.println("Top button");
+        }
+        if (buttons.isBottomPressed()) {
+            Serial.println("Bottom button");
+        }
+        if (buttons.isWheelPressed()) {
+            Serial.println("Wheel button");
+        }
         wifiCommmunicator.loop();
         serialCommunicator.loop();
         wheel.loop();
