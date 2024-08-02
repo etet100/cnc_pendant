@@ -9,6 +9,7 @@
 #include "state.h"
 #include "PCA9536D.h"
 #include "buttons.h"
+#include "I2C_eeprom.h"
 #include "images.h"
 #include "drawing.h"
 
@@ -25,6 +26,8 @@ MainPage mainPage;
 Wheel wheel(Wire);
 PCA9536 pca9536d;
 Buttons buttons(pca9536d);
+
+I2C_eeprom ee(0x50, I2C_DEVICESIZE_24LC08);
 
 #define LOGO_PART_WIDTH 40
 #define LOGO_PART_HEIGHT 33
@@ -136,6 +139,26 @@ void setup()
         Serial.println("PCA9536 not connected");
     }
 
+    delay(100);
+
+    ee.begin();
+    if (!ee.isConnected()) {
+        Serial.println("ERROR: Can't find eeprom\nstopped...");
+        while (1);
+    }
+
+    Serial.println("\nTEST: determine size");
+    uint32_t size = ee.determineSize(true);
+    if (size > 0) {
+        Serial.print("SIZE: ");
+        Serial.print(size);
+        Serial.println(" KB");
+    } else if (size == 0) {
+        Serial.println("WARNING: Can't determine eeprom size");
+    } else {
+        Serial.println("ERROR: Can't find eeprom\nstopped...");
+        while (1);
+    }
     screen.begin();
     screen.loop();
     pca9536d.write(LCD_BACKLIGHT_PIN, LOW);
