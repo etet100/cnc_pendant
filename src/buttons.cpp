@@ -22,8 +22,7 @@ void Buttons::begin()
 void Buttons::loop()
 {
     regs = pca9536d.readReg();
-    // isTopPressed();
-    // isBottomPressed();
+    wheel = digitalRead(BUTTON_WHEEL_PIN) == LOW;
 }
 
 bool Buttons::isTopPressed() {
@@ -35,5 +34,5 @@ bool Buttons::isBottomPressed() {
 }
 
 bool Buttons::isWheelPressed() {
-    return digitalRead(BUTTON_WHEEL_PIN) == LOW;
+    return wheel;
 }

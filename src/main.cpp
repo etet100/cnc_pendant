@@ -6,6 +6,7 @@
 #include "serial.h"
 #include "mainpage.h"
 #include "wheel.h"
+#include "state.h"
 #include "PCA9536D.h"
 #include "buttons.h"
 #include "images.h"
@@ -179,6 +180,9 @@ void loop()
         buttons.loop();
         wifiCommmunicator.loop();
         serialCommunicator.loop();
+        wheel.loop();
+        state.setPos(X, wheel.getPosition());
+        state.setPos(Y, wheel.getSpeed());
 
         lastTime = millis();
     }

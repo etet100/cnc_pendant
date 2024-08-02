@@ -8,6 +8,7 @@ class State
 public:
     State();
     float getPos(Axis axis);
+    void setPos(Axis axis, float value);
 private:
     float pos[3] = {0, 100.12, 2322.315};
 };

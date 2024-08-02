@@ -15,6 +15,7 @@ public:
 private:
     PCA9536 &pca9536d;
     uint8_t regs;
+    bool wheel;
 };
 
 #endif // BUTTONS_H_
