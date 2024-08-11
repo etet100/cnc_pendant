@@ -12,8 +12,8 @@ Wheel::Wheel(TwoWire& wire): wire(wire), as5600(&wire), position(WHEEL_POSITION)
 
 void Wheel::updateThresholds(float position)
 {
-    thresholdTop = position + WHEEL_HISTERESIS;
-    thresholdBottom = position - WHEEL_HISTERESIS;
+    this->thresholdTop = position + WHEEL_HISTERESIS;
+    this->thresholdBottom = position - WHEEL_HISTERESIS;
 }
 
 void Wheel::begin()
@@ -25,30 +25,46 @@ void Wheel::begin()
 
     Serial.print(" Result: ");
     Serial.println(as5600connected ? "connected" : "not connected");
+
+    if (as5600connected) {
+        int32_t basePos = as5600.getCumulativePosition() - WHEEL_OFFSET;
+        while (true) {
+            if (basePos > this->thresholdTop) {
+                this->position++;
+                updateThresholds(this->position * WHEEL_STEP);
+            } else if (basePos < this->thresholdBottom) {
+                this->position--;
+                updateThresholds(this->position * WHEEL_STEP);
+            } else {
+                debug();
+                return;
+            }
+        }
+    }
 }
 
 void Wheel::debug()
 {
-    Serial.print(position, DEC);
+    Serial.print(this->position, DEC);
     Serial.print(" ");
-    Serial.print(thresholdBottom, DEC);
+    Serial.print(this->thresholdBottom, DEC);
     Serial.print(" ");
-    Serial.println(thresholdTop, DEC);
+    Serial.println(this->thresholdTop, DEC);
 }
 
 void Wheel::loop()
 {
     int32_t basePos = as5600.getCumulativePosition() - WHEEL_OFFSET;
 
-    if (basePos > thresholdTop) {
-        position++;
-        updateThresholds(position * WHEEL_STEP);
+    if (basePos > this->thresholdTop) {
+        this->position++;
+        updateThresholds(this->position * WHEEL_STEP);
         debug();
-    } else if (basePos < thresholdBottom) {
-        position--;
-        updateThresholds(position * WHEEL_STEP);
+    } else if (basePos < this->thresholdBottom) {
+        this->position--;
+        updateThresholds(this->position * WHEEL_STEP);
         debug();
     }
 
-    speed = as5600.getAngularSpeed();
+    this->speed = this->as5600.getAngularSpeed();
 }
