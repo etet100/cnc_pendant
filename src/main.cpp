@@ -164,6 +164,8 @@ void setup()
     screen.loop();
     pca9536d.write(LCD_BACKLIGHT_PIN, LOW);
 
+    wifiCommmunicator.begin();
+
     logo();
     screen.setCurrentPage(&mainPage);
     screen.clear();
@@ -205,14 +207,39 @@ void loop()
         buttons.loop();
         if (buttons.isTopPressed()) {
             Serial.println("Top button");
+            //state.setPos(Z, 1);
         }
         if (buttons.isBottomPressed()) {
             Serial.println("Bottom button");
+            //state.setPos(Z, 2);
         }
         if (buttons.isWheelPressed()) {
             Serial.println("Wheel button");
+            //state.setPos(Z, 3);
         }
         wifiCommmunicator.loop();
+        WiFiCommmunicatorState wifiState = wifiCommmunicator.getState();
+        switch (wifiState)
+        {
+            case WIFI_DISCONNECTED:
+                state.setPos(Z, 0);
+                break;
+            case WIFI_CONNECTING:
+                state.setPos(Z, 1);
+                break;
+            case WIFI_CONNECTED:
+                state.setPos(Z, 2);
+                break;
+            case WIFI_IP:
+                state.setPos(Z, 3);
+                break;
+            case WIFI_CONNECTED_TO_SERVER:
+                state.setPos(Z, 5);
+                break;
+            case WIFI_CONNECTING_TO_SERVER:
+                state.setPos(Z, 4);
+                break;
+        }
         serialCommunicator.loop();
         wheel.loop();
         state.setPos(X, wheel.getPosition());

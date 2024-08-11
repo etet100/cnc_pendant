@@ -3,6 +3,16 @@
 
 #include "communicator.h"
 #include <ESP8266WiFi.h>
+#include "ESPAsyncTCP.h"
+
+enum WiFiCommmunicatorState {
+    WIFI_CONNECTING,
+    WIFI_CONNECTED,
+    WIFI_IP,
+    WIFI_CONNECTING_TO_SERVER,
+    WIFI_CONNECTED_TO_SERVER,
+    WIFI_DISCONNECTED,
+};
 
 class WiFiCommmunicator : public Communicator {
 public:
@@ -12,12 +22,14 @@ public:
     void loop() override;
     bool isConnected() override;
     void scanNetworks();
+    WiFiCommmunicatorState getState() { return state; }
 private:
-    bool connected;
-    bool connecting;
+    WiFiCommmunicatorState state;
     WiFiEventHandler wifiGotIPHandler;
     WiFiEventHandler wifiConnectedHandler;
-    WiFiClient wifiClient;
+    //WiFiClient wifiClient;
+    AsyncClient client;
+    void connect();
 };
 
 #endif // WIFI_H_

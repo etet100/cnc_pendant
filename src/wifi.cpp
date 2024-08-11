@@ -1,13 +1,39 @@
 #include "wifi.h"
+#include "ESPAsyncTCP.h"
 #include <Arduino.h>
 #include "../config.h"
 
 const char *ssid = WIFI_SSID;
 const char *password = WIFI_PASSWORD;
 
-WiFiCommmunicator::WiFiCommmunicator()
+static void handleData(void* arg, AsyncClient* client, void *data, size_t len) {
+	Serial.printf("\n data received from %s \n", client->remoteIP().toString().c_str());
+	Serial.write((uint8_t*)data, len);
+
+	// os_timer_arm(&intervalTimer, 2000, true); // schedule for reply to server at next 2s
+}
+
+// static void onConnect(void* arg, AsyncClient* client) {
+// 	Serial.println("client connected");
+// 	//replyToServer(client);
+// }
+
+WiFiCommmunicator::WiFiCommmunicator() : state(WIFI_DISCONNECTED)
 {
-    connected = false;
+    client.onData(&handleData);
+	//client.onConnect(&onConnect);
+    client.onConnect([this](void* arg, AsyncClient* client) {
+        Serial.println("connected");
+        this->state = WIFI_CONNECTED_TO_SERVER;
+    });
+    client.onDisconnect([this](void* arg, AsyncClient* client) {
+        Serial.println("disconnected");
+        this->state = WIFI_IP;
+    });
+    client.onTimeout([](void* arg, AsyncClient* client, uint32_t time) {
+        Serial.println("timeout");
+        //client->close();
+    });
 }
 
 WiFiCommmunicator::~WiFiCommmunicator()
@@ -18,52 +44,69 @@ WiFiCommmunicator::~WiFiCommmunicator()
 
 bool WiFiCommmunicator::isConnected()
 {
-    return connected;
+    return state == WIFI_CONNECTED_TO_SERVER;
 }
 
 void WiFiCommmunicator::begin()
 {
+    Serial.println("Initializing WiFi...");
+
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
 
     wifiGotIPHandler = WiFi.onStationModeGotIP([this](const WiFiEventStationModeGotIP &event) {
-        Serial.print("Station connected, IP: ");
+        Serial.print("WiFi, IP: ");
         Serial.println(WiFi.localIP());
 
-        connected = true;
-        connecting = false;
+        this->connect();
     });
-    wifiConnectedHandler = WiFi.onStationModeConnected([](const WiFiEventStationModeConnected &event) {
-        Serial.println("Connected to WiFi");
+    wifiConnectedHandler = WiFi.onStationModeConnected([this](const WiFiEventStationModeConnected &event) {
+        this->state = WIFI_CONNECTED;
+        Serial.println(" WiFi, connected");
     });
-    WiFi.onStationModeConnected([](const WiFiEventStationModeConnected &event) {
-        Serial.println("Connected to WiFi");
-    });
+    // WiFi.onStationModeConnected([](const WiFiEventStationModeConnected &event) {
+    //     Serial.println(" WiFi, connected");
+    // });
+
+    Serial.println(" Result: initialized");
+}
+
+void WiFiCommmunicator::connect()
+{
+    this->client.connect("192.168.1.2", 5555);
+    this->state = WIFI_CONNECTING_TO_SERVER;
 }
 
 void WiFiCommmunicator::loop()
 {
-    if (WiFi.status() == WL_CONNECTED && !wifiClient.connected()) {
-        Serial.println("Connecting to 192.168.1.2");
-        if (wifiClient.connect("192.168.1.2", 5555)) {
-            connected = true;
-            Serial.println("Connected");
-        } else {
-            Serial.println("Connection failed");
-        }
-    } else if (wifiClient.connected()) {
-        //wifiClient.print("Hello, world!");
-        wifiClient.setTimeout(1);
-        if (wifiClient.available()) {
-            String s = wifiClient.readString();
-            Serial.println(s);
-        }
+    if (state == WIFI_IP) {
+        this->connect();
     }
+
+    // if (WiFi.status() != WL_CONNECTED) {
+    //     state = WIFI_CONNECTING;
+    // } else if (WiFi.status() == WL_CONNECTED && !wifiClient.connected()) {
+    //     state = WIFI_CONNECTED;
+    //     Serial.println("Connecting to 192.168.1.2");
+    //     if (wifiClient.connect("192.168.1.2", 5555)) {
+    //         this->state = WIFI_CONNECTED_TO_SERVER;
+    //         Serial.println("Connected");
+    //     } else {
+    //         Serial.println("Connection failed");
+    //     }
+    // } else if (wifiClient.connected()) {
+    //     //wifiClient.print("Hello, world!");
+    //     wifiClient.setTimeout(1);
+    //     if (wifiClient.available()) {
+    //         String s = wifiClient.readString();
+    //         Serial.println(s);
+    //     }
+    // }
 }
 
 void WiFiCommmunicator::scanNetworks()
 {
-   String ssid;
+    String ssid;
     int32_t rssi;
     uint8_t encryptionType;
     uint8_t *bssid;
@@ -91,6 +134,4 @@ void WiFiCommmunicator::scanNetworks()
     {
         Serial.printf(PSTR("WiFi scan error %d"), scanResult);
     }
-
-    connecting = true;
 }

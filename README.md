@@ -6,3 +6,7 @@ AS5600 encoder based knob
 
 ![s1](docs/images/screenshot_1.png)
 ![s1](docs/images/screenshot_2.png)
+
+TCP Testing software:
+Hercules
+TcpTerminal
