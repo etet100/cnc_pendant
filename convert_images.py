@@ -146,7 +146,7 @@ def generate_font(font_path, font_size):
         map[byte] = 0xFFFF
     map_pos = 0
 
-    chars = ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".")
+    chars = ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "-", "X", "Y", "Z")
     for (i, char) in enumerate(chars):
         byte = bytes(char, encoding="ascii")[0]
         map[byte] = map_pos

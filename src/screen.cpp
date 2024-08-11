@@ -28,17 +28,19 @@ void Screen::begin()
 void Screen::loop()
 {
     touch.loop();
-    if (currentPage != nullptr) {
-        if (touch.isTouched()) {
-            TS_Point touchPoint = touch.getPoint();
-            Serial.write("Touch: ");
-            Serial.print(touchPoint.x);
-            Serial.print(", ");
-            Serial.println(touchPoint.y);
-            currentPage->processTouch(touchPoint.x, touchPoint.y);
-        }
-        currentPage->draw();
+    if (currentPage == nullptr) {
+        return;
     }
+
+    if (touch.isTouched()) {
+        TS_Point touchPoint = touch.getPoint();
+        Serial.write("Touch: ");
+        Serial.print(touchPoint.x);
+        Serial.print(", ");
+        Serial.println(touchPoint.y);
+        currentPage->processTouch(touchPoint.x, touchPoint.y);
+    }
+    currentPage->draw();
 }
 
 void Screen::clear()

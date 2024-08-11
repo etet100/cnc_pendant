@@ -33,7 +33,7 @@ void drawChar(
     byte char_,
     uint16_t color
 ) {
-    if (char_ < 48 || char_ > 57) {
+    if (char_ < 32 || char_ > 128) {
         return;
     }
 
