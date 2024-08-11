@@ -2969,6 +2969,16 @@
 	)
 	(wire
 		(pts
+			(xy 231.14 135.89) (xy 236.22 135.89)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1e742a20-3588-42ce-a096-26f19fac780e")
+	)
+	(wire
+		(pts
 			(xy 128.27 111.76) (xy 134.62 111.76)
 		)
 		(stroke
@@ -3126,6 +3136,16 @@
 			(type default)
 		)
 		(uuid "33465c56-fd2d-44ca-8737-a94cb9225ca3")
+	)
+	(wire
+		(pts
+			(xy 231.14 139.7) (xy 231.14 135.89)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "34ca496d-8409-4f14-b1ad-fba67c4199f3")
 	)
 	(wire
 		(pts
@@ -3369,6 +3389,16 @@
 	)
 	(wire
 		(pts
+			(xy 231.14 142.24) (xy 231.14 146.05)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "53514a63-e1c5-4030-a492-df91027ddd43")
+	)
+	(wire
+		(pts
 			(xy 100.33 130.81) (xy 100.33 104.14)
 		)
 		(stroke
@@ -3476,6 +3506,16 @@
 			(type default)
 		)
 		(uuid "7277cae8-ff95-4d53-94ac-ab72e83c15b0")
+	)
+	(wire
+		(pts
+			(xy 227.33 139.7) (xy 231.14 139.7)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "74104663-26c2-48fa-802a-886330e72faf")
 	)
 	(wire
 		(pts
@@ -4059,6 +4099,16 @@
 	)
 	(wire
 		(pts
+			(xy 227.33 142.24) (xy 231.14 142.24)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d73e8c16-699e-401b-a0fa-52ef23321047")
+	)
+	(wire
+		(pts
 			(xy 148.59 129.54) (xy 148.59 86.36)
 		)
 		(stroke
@@ -4296,6 +4346,16 @@
 			(type default)
 		)
 		(uuid "f7debe7b-b77c-4128-ada5-0ce93ead2c0c")
+	)
+	(wire
+		(pts
+			(xy 231.14 146.05) (xy 236.22 146.05)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f82a5f22-bb7d-4da7-bb18-7937a81bc246")
 	)
 	(wire
 		(pts
@@ -5236,6 +5296,76 @@
 		)
 	)
 	(symbol
+		(lib_id "Switch:SW_Push")
+		(at 236.22 140.97 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "6a766e15-1a23-41dc-b4d6-96db14011175")
+		(property "Reference" "SW3"
+			(at 240.03 139.6999 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "SW_Push"
+			(at 240.03 142.2399 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Button_Switch_THT:SW_PUSH_6mm_H7.3mm"
+			(at 241.3 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 241.3 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Push button switch, generic, two pins"
+			(at 236.22 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "ba085752-8ad2-41c7-a8a4-2e52399d524d")
+		)
+		(pin "2"
+			(uuid "cd0a6b16-a625-45da-830e-41b7321ed7bd")
+		)
+		(instances
+			(project "main_v2"
+				(path "/c21fd4e2-9981-4ff5-91c1-24534bdcc8f5"
+					(reference "SW3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GNDD")
 		(at 162.56 119.38 0)
 		(unit 1)
@@ -5370,6 +5500,74 @@
 			(project ""
 				(path "/c21fd4e2-9981-4ff5-91c1-24534bdcc8f5"
 					(reference "J1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:Conn_01x02_Pin")
+		(at 222.25 139.7 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "8f717516-d1cd-4c2a-9403-e38d2023542c")
+		(property "Reference" "J3"
+			(at 222.885 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Btn"
+			(at 222.885 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
+			(at 222.25 139.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 222.25 139.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x02, script generated"
+			(at 222.25 139.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "fa42c6d2-5503-466d-9646-c89b08534415")
+		)
+		(pin "1"
+			(uuid "31d0a559-3123-48ab-be34-676756c52509")
+		)
+		(instances
+			(project "main_v2"
+				(path "/c21fd4e2-9981-4ff5-91c1-24534bdcc8f5"
+					(reference "J3")
 					(unit 1)
 				)
 			)
