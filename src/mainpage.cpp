@@ -50,7 +50,7 @@ void MainPage::draw()
     drawChar(tft, 5, 5 + 40, 'Y');
     drawChar(tft, 5, 5 + 40 + 40, 'Z');
 
-    drawFloatNumber(tft, 33, 5, state.getPos(X), 8);
-    drawFloatNumber(tft, 33, 5 + 40, state.getPos(Y), 8);
-    drawFloatNumber(tft, 33, 5 + 40 + 40, state.getPos(Z), 8);
+    drawFloatNumber(tft, 33, 5, state.getPos(Axis::X), 8);
+    drawFloatNumber(tft, 33, 5 + 40, state.getPos(Axis::Y), 8);
+    drawFloatNumber(tft, 33, 5 + 40 + 40, state.getPos(Axis::Z), 8);
 }

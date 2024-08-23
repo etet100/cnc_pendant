@@ -22,9 +22,9 @@ public:
     void loop() override;
     bool isConnected() override;
     void scanNetworks();
-    WiFiCommmunicatorState getState() { return state; }
+    WiFiCommmunicatorState getState() { return commState; }
 private:
-    WiFiCommmunicatorState state;
+    WiFiCommmunicatorState commState;
     WiFiEventHandler wifiGotIPHandler;
     WiFiEventHandler wifiConnectedHandler;
     //WiFiClient wifiClient;

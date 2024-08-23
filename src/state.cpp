@@ -4,11 +4,21 @@ State::State() {
 }
 
 float State::getPos(Axis axis) {
-    return pos[axis];
+    return pos[(int) axis];
 }
 
 void State::setPos(Axis axis, float value) {
-    pos[axis] = value;
+    pos[(int) axis] = value;
+}
+
+void State::fillStateMessage(StateMessage &msg) {
+    msg.header.start = 0xAA55;
+    msg.header.size = sizeof(StateMessage);
+    msg.header.type = (uint8_t) PacketType::STATE;
+    msg.x = pos[(int) Axis::X];
+    msg.y = pos[(int) Axis::Y];
+    msg.z = pos[(int) Axis::Z];
+    msg.mode = mode;
 }
 
 State state;

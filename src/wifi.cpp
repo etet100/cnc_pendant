@@ -1,34 +1,77 @@
 #include "wifi.h"
 #include "ESPAsyncTCP.h"
 #include <Arduino.h>
+//#include <ArduinoJson.h>
 #include "../config.h"
+#include "state.h"
+#include <CircularBuffer.hpp>
 
 const char *ssid = WIFI_SSID;
 const char *password = WIFI_PASSWORD;
 
 static void handleData(void* arg, AsyncClient* client, void *data, size_t len) {
-	Serial.printf("\n data received from %s \n", client->remoteIP().toString().c_str());
-	Serial.write((uint8_t*)data, len);
+    static CircularBuffer<uint8_t, 128> buffer;
+    static uint8_t packetType = 255;
+    static uint8_t packetSize;
 
-	// os_timer_arm(&intervalTimer, 2000, true); // schedule for reply to server at next 2s
+	Serial.printf("\n data received from %s \n", client->remoteIP().toString().c_str());
+
+    uint8_t* dataPtr = (uint8_t*)data;
+    while (len--) {
+        buffer.push(*dataPtr++);
+    }
+
+    while (buffer.size()) {
+        if (packetType == 255) {
+            while (buffer.size() >= sizeof(HeaderMessage)) {
+                if (
+                    buffer[0] != 0x55 || buffer[1] != 0xAA  ||
+                    buffer[3] /* type */ >= (uint8_t)PacketType::MAX || buffer[2] /* size */ > MAX_PACKET_SIZE
+                ) {
+                    buffer.shift();
+                    break;
+                }
+
+                packetType = buffer[3];
+                packetSize = buffer[2];
+                break;
+            }
+        }
+
+        if (packetType < 255 && buffer.size() >= packetSize) {
+            switch (packetType) {
+                case (uint8_t)PacketType::STATE:
+                    StateMessage msg;
+                    uint8_t* msgPtr = (uint8_t*)&msg;
+                    while (packetSize--) {
+                        *msgPtr++ = buffer.shift();
+                    }
+                    Serial.println(msg.header.size);
+                    Serial.println(msg.header.start);
+                    Serial.println(msg.x);
+                    Serial.println(msg.y);
+                    break;
+            }
+
+            packetType = 255;
+            continue;
+        }
+
+        return;
+    }
 }
 
-// static void onConnect(void* arg, AsyncClient* client) {
-// 	Serial.println("client connected");
-// 	//replyToServer(client);
-// }
-
-WiFiCommmunicator::WiFiCommmunicator() : state(WIFI_DISCONNECTED)
+WiFiCommmunicator::WiFiCommmunicator() : commState(WIFI_DISCONNECTED)
 {
     client.onData(&handleData);
 	//client.onConnect(&onConnect);
     client.onConnect([this](void* arg, AsyncClient* client) {
         Serial.println("connected");
-        this->state = WIFI_CONNECTED_TO_SERVER;
+        this->commState = WIFI_CONNECTED_TO_SERVER;
     });
     client.onDisconnect([this](void* arg, AsyncClient* client) {
         Serial.println("disconnected");
-        this->state = WIFI_IP;
+        this->commState = WIFI_IP;
     });
     client.onTimeout([](void* arg, AsyncClient* client, uint32_t time) {
         Serial.println("timeout");
@@ -44,7 +87,7 @@ WiFiCommmunicator::~WiFiCommmunicator()
 
 bool WiFiCommmunicator::isConnected()
 {
-    return state == WIFI_CONNECTED_TO_SERVER;
+    return this->commState == WIFI_CONNECTED_TO_SERVER;
 }
 
 void WiFiCommmunicator::begin()
@@ -61,7 +104,7 @@ void WiFiCommmunicator::begin()
         this->connect();
     });
     wifiConnectedHandler = WiFi.onStationModeConnected([this](const WiFiEventStationModeConnected &event) {
-        this->state = WIFI_CONNECTED;
+        this->commState = WIFI_CONNECTED;
         Serial.println(" WiFi, connected");
     });
     // WiFi.onStationModeConnected([](const WiFiEventStationModeConnected &event) {
@@ -74,34 +117,39 @@ void WiFiCommmunicator::begin()
 void WiFiCommmunicator::connect()
 {
     this->client.connect("192.168.1.2", 5555);
-    this->state = WIFI_CONNECTING_TO_SERVER;
+    this->commState = WIFI_CONNECTING_TO_SERVER;
 }
 
 void WiFiCommmunicator::loop()
 {
-    if (state == WIFI_IP) {
+    if (this->commState == WIFI_IP) {
         this->connect();
     }
 
-    // if (WiFi.status() != WL_CONNECTED) {
-    //     state = WIFI_CONNECTING;
-    // } else if (WiFi.status() == WL_CONNECTED && !wifiClient.connected()) {
-    //     state = WIFI_CONNECTED;
-    //     Serial.println("Connecting to 192.168.1.2");
-    //     if (wifiClient.connect("192.168.1.2", 5555)) {
-    //         this->state = WIFI_CONNECTED_TO_SERVER;
-    //         Serial.println("Connected");
-    //     } else {
-    //         Serial.println("Connection failed");
-    //     }
-    // } else if (wifiClient.connected()) {
-    //     //wifiClient.print("Hello, world!");
-    //     wifiClient.setTimeout(1);
-    //     if (wifiClient.available()) {
-    //         String s = wifiClient.readString();
-    //         Serial.println(s);
-    //     }
-    // }
+    static uint32_t lastTime = 0;
+
+    if (millis() - lastTime >= 500)
+    {
+        if (this->commState == WIFI_CONNECTED_TO_SERVER)
+        {
+            // StateMessage msg;
+            // state.fillStateMessage(msg);
+            // client.write((const char *)&msg, sizeof(msg));
+
+            // JsonDocument doc;
+            // doc["x"] = state.getPos(X);
+            // doc["y"] = state.getPos(Y);
+            // doc["z"] = state.getPos(Z);
+            // doc["s"] = this->commState;
+
+            // std::string output;
+
+            // serializeMsgPack(doc, output);
+            //serializeJson(doc, output);
+
+            // client.write(output.data(), output.length());
+        }
+    }
 }
 
 void WiFiCommmunicator::scanNetworks()

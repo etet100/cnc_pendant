@@ -119,19 +119,13 @@ void setup()
     setupWatchdog();
     setupTwoWire();
 
-    wheel.begin();
-
     pca9536d.begin(Wire);
     if (pca9536d.isConnected())
     {
-        Serial.println("PCA9536 connected");
         // pca9536d.pinMode(0, OUTPUT); NC
         pca9536d.pinMode(LCD_BACKLIGHT_PIN, OUTPUT);
-        // pca9536d.write(0, LOW);
-        // pca9536d.write(1, LOW); bt btnn
-        // pca9536d.write(2, LOW);
-        pca9536d.write(LCD_BACKLIGHT_PIN, LOW);
         pca9536d.write(LCD_BACKLIGHT_PIN, HIGH);
+        Serial.println("PCA9536 connected");
     } else
     {
         Serial.println("PCA9536 not connected");
@@ -158,9 +152,10 @@ void setup()
         while (1);
     }
 
+    wheel.begin();
     touch.begin();
-
     screen.begin();
+
     screen.loop();
     pca9536d.write(LCD_BACKLIGHT_PIN, LOW);
 
@@ -222,28 +217,28 @@ void loop()
         switch (wifiState)
         {
             case WIFI_DISCONNECTED:
-                state.setPos(Z, 0);
+                state.setPos(Axis::Z, 0);
                 break;
             case WIFI_CONNECTING:
-                state.setPos(Z, 1);
+                state.setPos(Axis::Z, 1);
                 break;
             case WIFI_CONNECTED:
-                state.setPos(Z, 2);
+                state.setPos(Axis::Z, 2);
                 break;
             case WIFI_IP:
-                state.setPos(Z, 3);
+                state.setPos(Axis::Z, 3);
                 break;
             case WIFI_CONNECTED_TO_SERVER:
-                state.setPos(Z, 5);
+                state.setPos(Axis::Z, 5);
                 break;
             case WIFI_CONNECTING_TO_SERVER:
-                state.setPos(Z, 4);
+                state.setPos(Axis::Z, 4);
                 break;
         }
         serialCommunicator.loop();
         wheel.loop();
-        state.setPos(X, wheel.getPosition());
-        state.setPos(Y, wheel.getSpeed());
+        state.setPos(Axis::X, wheel.getPosition());
+        state.setPos(Axis::Y, wheel.getSpeed());
 
         lastTime = millis();
     }
