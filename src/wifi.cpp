@@ -4,53 +4,77 @@
 //#include <ArduinoJson.h>
 #include "../config.h"
 #include "state.h"
-#include <CircularBuffer.hpp>
+#include "circularbuffer.h"
+//#include <CircularBuffer.hpp>
+#include <CRC.h>
 
 const char *ssid = WIFI_SSID;
 const char *password = WIFI_PASSWORD;
 
 static void handleData(void* arg, AsyncClient* client, void *data, size_t len) {
-    static CircularBuffer<uint8_t, 128> buffer;
+    static CircularBuffer<256> buffer;
     static uint8_t packetType = 255;
     static uint8_t packetSize;
 
 	Serial.printf("\n data received from %s \n", client->remoteIP().toString().c_str());
 
-    uint8_t* dataPtr = (uint8_t*)data;
-    while (len--) {
-        buffer.push(*dataPtr++);
+    if (buffer.free() < len) {
+        Serial.println("Buffer overflow");
+    } else {
+        buffer.push((uint8_t*)data, len);
     }
 
     while (buffer.size()) {
         if (packetType == 255) {
-            while (buffer.size() >= sizeof(HeaderMessage)) {
+            while (buffer.size() >= sizeof(Header)) {
                 if (
-                    buffer[0] != 0x55 || buffer[1] != 0xAA  ||
-                    buffer[3] /* type */ >= (uint8_t)PacketType::MAX || buffer[2] /* size */ > MAX_PACKET_SIZE
+                    buffer[COMM_HEAD_START_1_POS] != COMM_START_BYTE_1 || buffer[COMM_HEAD_START_2_POS] != COMM_START_BYTE_2  ||
+                    buffer[COMM_HEAD_TYPE_POS] >= (uint8_t)PacketType::MAX || buffer[COMM_HEAD_SIZE_POS] > COMM_MAX_PACKET_SIZE
                 ) {
-                    buffer.shift();
-                    break;
+                    buffer.skip(1);
+                    continue;
                 }
 
-                packetType = buffer[3];
-                packetSize = buffer[2];
+                packetType = buffer[COMM_HEAD_TYPE_POS];
+                packetSize = buffer[COMM_HEAD_SIZE_POS];
                 break;
             }
         }
 
         if (packetType < 255 && buffer.size() >= packetSize) {
             switch (packetType) {
-                case (uint8_t)PacketType::STATE:
+                case (uint8_t)PacketType::STATE: {
                     StateMessage msg;
-                    uint8_t* msgPtr = (uint8_t*)&msg;
-                    while (packetSize--) {
-                        *msgPtr++ = buffer.shift();
+                    buffer.get((uint8_t*)&msg, packetSize);
+                    Serial.printf("CRC: %d %d %d\n", msg.footer.crc, calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer)), packetSize);
+                    if (msg.footer.crc != calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer))) {
+                        Serial.println("State CRC error");
+                        break;
                     }
-                    Serial.println(msg.header.size);
-                    Serial.println(msg.header.start);
-                    Serial.println(msg.x);
-                    Serial.println(msg.y);
+                    Serial.printf("State: %f %f %f %d\n", msg.x, msg.y, msg.z, (int)msg.mode);
                     break;
+                }
+                case (uint8_t)PacketType::WIFI_CONFIG: {
+                    WifiConfigMessage msg;
+                    buffer.get((uint8_t*)&msg, packetSize);
+                    Serial.printf("CRC: %d %d %d\n", msg.footer.crc, calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer)), packetSize);
+                    if (msg.footer.crc != calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer))) {
+                        Serial.println("Wifi cfg CRC error");
+                        break;
+                    }
+                    Serial.printf("Wifi config: %s %s %s\n", msg.ssid, msg.password, msg.clientIp);
+                    break;
+                }
+                case (uint8_t)PacketType::PING: {
+                    PingMessage msg;
+                    buffer.get((uint8_t*)&msg, packetSize);
+                    if (msg.footer.crc != calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer))) {
+                        Serial.println("Ping CRC error");
+                        break;
+                    }
+                    Serial.println("Ping");
+                    break;
+                }
             }
 
             packetType = 255;
@@ -116,6 +140,7 @@ void WiFiCommmunicator::begin()
 
 void WiFiCommmunicator::connect()
 {
+    Serial.println("Connecting to server...");
     this->client.connect("192.168.1.2", 5555);
     this->commState = WIFI_CONNECTING_TO_SERVER;
 }
