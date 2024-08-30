@@ -36,7 +36,7 @@ void Wheel::begin()
                 this->position--;
                 updateThresholds(this->position * WHEEL_STEP);
             } else {
-                debug();
+                // debug();
                 return;
             }
         }
@@ -56,14 +56,20 @@ void Wheel::loop()
 {
     int32_t basePos = as5600.getCumulativePosition() - WHEEL_OFFSET;
 
-    if (basePos > this->thresholdTop) {
-        this->position++;
-        updateThresholds(this->position * WHEEL_STEP);
-        debug();
-    } else if (basePos < this->thresholdBottom) {
-        this->position--;
-        updateThresholds(this->position * WHEEL_STEP);
-        debug();
+    // do more than one step at a time
+    while (true)
+    {
+        if (basePos > this->thresholdTop) {
+            this->position++;
+            updateThresholds(this->position * WHEEL_STEP);
+            // debug();
+        } else if (basePos < this->thresholdBottom) {
+            this->position--;
+            updateThresholds(this->position * WHEEL_STEP);
+            // debug();
+        } else {
+            break;
+        }
     }
 
     this->speed = this->as5600.getAngularSpeed();
