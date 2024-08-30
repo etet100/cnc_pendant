@@ -3,12 +3,21 @@
 #include "fonts/font.h"
 #include "nbSPI.h"
 
+static const uint8_t *font_data = nullptr;
+static const uint16_t *font_map = nullptr;
+
 inline static void writeAndWait(uint16_t* buf, uint16_t bytes)
 {
     nbSPI_writeBytes((uint8_t*)buf, bytes);
     while (nbSPI_isBusy()) {
         delayMicroseconds(3);
     };
+}
+
+void setFont(const uint8_t *data, const uint16_t *map)
+{
+    font_data = data;
+    font_map = map;
 }
 
 void drawImage(
@@ -37,24 +46,24 @@ void drawChar(
         return;
     }
 
-    const uint8_t *font_data = font_7seg;
-    font_data += pgm_read_word(&font_7seg_map[char_ - 32]);
-    uint8_t width = pgm_read_byte(font_data++);
-    uint8_t height = pgm_read_byte(font_data++);
+    const uint8_t *font_data_ = font_data;
+    font_data_ += pgm_read_word(&font_map[char_ - 32]);
+    uint8_t width = pgm_read_byte(font_data_++);
+    uint8_t height = pgm_read_byte(font_data_++);
     if (width == 0 || height == 0 || width > 100 || height > 100) {
         return;
     }
     uint16_t decoded_size = width * height * 2;
     uint16_t *buf = (uint16_t*)malloc(decoded_size);
     uint16_t *pos = buf;
-    char font_byte = pgm_read_byte(font_data++);
+    char font_byte = pgm_read_byte(font_data_++);
     while (font_byte) {
         uint8_t font_byte_color = font_byte & 0b11;
         font_byte >>= 2;
         while (font_byte--) {
             *pos++ = font_byte_color == 0 ? BYTE_SWAP(ILI9341_BLACK) : color;
         }
-        font_byte = pgm_read_byte(font_data++);
+        font_byte = pgm_read_byte(font_data_++);
     }
     tft->startWrite();
     tft->setAddrWindow(x, y, width, height);
@@ -90,7 +99,7 @@ void drawFloatNumber(Adafruit_ILI9341* tft, uint16_t x, uint16_t y, float number
         int toPad = padWithZeroesTo - strlen(buf);
         while (toPad-- > 0) {
             drawChar(tft, x, y, '0', BYTE_SWAP(ILI9341_DARKGREY));
-            x += 25;
+            x += 28;
         }
     }
     for (size_t i = 0; i < strlen(buf); i++) {
@@ -98,7 +107,7 @@ void drawFloatNumber(Adafruit_ILI9341* tft, uint16_t x, uint16_t y, float number
         if (buf[i] == '.') {
             x += 10;
         } else {
-            x += 25;
+            x += 28;
         }
     }
 }

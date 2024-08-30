@@ -1,5 +1,5 @@
 import os, glob
-import pkg_resources
+#import pkg_resources
 from pathlib import Path
 from PIL import Image, ImageFont, ImageDraw
 
@@ -119,15 +119,14 @@ def generate_character(char, font, width, height, file):
     # add 2 for width and height
     return len(list) + 2
 
-def generate_font(font_path, font_size):
+def generate_font(font_path, font_size, chars):
     font_name = Path(font_path).stem
 
-    file = open("include\\fonts\\font.h", "w")
-    file.write("#include \"Arduino.h\"\n")
+    file = open("include\\fonts\\font.h", "a")
     file.write("\n")
-    file.write("// %s\n" % os.path.basename(font_path))
+    file.write("// %s (%d px)\n" % (os.path.basename(font_path), font_size))
     file.write("\n")
-    file.write("static const uint8_t font_%s[] PROGMEM = {\n" % font_name)
+    file.write("static const uint8_t font_%s_%d[] PROGMEM = {\n" % (font_name, font_size))
 
     font = ImageFont.truetype(font_path, font_size)
 
@@ -146,7 +145,7 @@ def generate_font(font_path, font_size):
         map[byte] = 0xFFFF
     map_pos = 0
 
-    chars = ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "-", "X", "Y", "Z")
+    # chars = ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "-", "X", "Y", "Z")
     for (i, char) in enumerate(chars):
         byte = bytes(char, encoding="ascii")[0]
         map[byte] = map_pos
@@ -166,7 +165,7 @@ def generate_font(font_path, font_size):
     # image.save('obrazek_z_tekstem.bmp')
     file.write("};\n")
 
-    file.write("static const uint16_t font_%s_map[] PROGMEM = {\n" % font_name)
+    file.write("static const uint16_t font_%s_map_%d[] PROGMEM = {\n" % (font_name, font_size))
 
     for (i, byte) in map.items():
         file.write("%d /* %d */, " % (byte, i))
@@ -180,7 +179,11 @@ def generate_font(font_path, font_size):
 print("--------------------------------")
 print("Generating fonts images")
 #generate_font("fonts/7seg.ttf", 40) # DSEG7Classic-Bold.ttf
-generate_font("fonts/7seg.ttf", 30) # DSEG7Classic-Bold.ttf
+file = open("include\\fonts\\font.h", "w")
+file.write("#include \"Arduino.h\"\n")
+file.close();
+generate_font("fonts/7seg.ttf", 32, ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "-", ",")) # DSEG7Classic-Bold.ttf
+generate_font("fonts/manolomono.otf", 25, ("X", "Y", "Z"))
 print("Converting images to C arrays...")
 find_images()
 print("--------------------------------")

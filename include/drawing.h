@@ -9,6 +9,8 @@ void drawImage(
     const uint8_t w, const uint8_t h
 );
 
+void setFont(const uint8_t *data, const uint16_t *map);
+
 void drawChar(
     Adafruit_ILI9341* tft,
     uint16_t x, uint16_t y,
