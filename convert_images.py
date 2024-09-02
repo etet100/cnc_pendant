@@ -23,13 +23,14 @@ def convert_image(image):
             im = im.convert("RGB")
         file = open("include\\images\\" + image_name + ".h", "w")
         file.write("#include \"Arduino.h\"\n")
+        file.write("#include \"images.h\"\n")
         file.write("\n")
         file.write("// %s\n" % os.path.basename(image))
         file.write("// width %d\n" % im.size[0])
         file.write("// height %d\n" % im.size[1])
         file.write("// mode %s\n" % im.mode)
         file.write("\n")
-        file.write("static const uint16_t image_%s_size[] PROGMEM = {%d, %d, %d};\n" % (image_name, im.size[0], im.size[1], im.size[0] * im.size[1] * 2))
+        file.write("static const ImageSize image_%s_size = {%d, %d, %d};\n" % (image_name, im.size[0], im.size[1], im.size[0] * im.size[1] * 2))
         file.write("static const uint16_t image_%s[] PROGMEM = {\n" % image_name)
         px = im.load()
         for y in range(im.size[1]):
@@ -51,6 +52,12 @@ def find_images():
     file.write("#define H_IMAGES\n")
     file.write("#pragma once\n")
     file.write("\n")
+    file.write("struct ImageSize {\n");
+    file.write(" uint16_t width;\n");
+    file.write(" uint16_t height;\n");
+    file.write(" uint16_t size;\n");
+    file.write("};\n");
+    file.write("\n")
 
     for image in glob.glob("images/*.png") + glob.glob("images/*.bmp") + glob.glob("images/*.jpg") + glob.glob("images/logo/*.png"):
         if os.path.basename(image).startswith("_"):
@@ -65,7 +72,7 @@ def find_images():
 def build_rle_byte(color, count):
     return (count << 2) | color
 
-def generate_character(char, font, width, height, file):
+def generate_character(char, font, width, height, top_offset, file, font_name, font_size):
     background_color = (1) #(255, 255, 255)
     text_color = 255 #(0, 0, 0)
 
@@ -76,7 +83,7 @@ def generate_character(char, font, width, height, file):
     image = Image.new("L", (width, height), background_color)
 
     draw = ImageDraw.Draw(image)
-    draw.text((0, 0), char, font=font, fill=text_color)
+    draw.text((0, -top_offset), char, font=font, fill=text_color)
 
     list = []
     count = 0
@@ -103,7 +110,7 @@ def generate_character(char, font, width, height, file):
     list.append(0x00)
 
     # print("images\\%s.bmp" % char)
-    # image.save("images\\%s.bmp" % char)
+    image.save("images\\fonts\\%s_%s_%s.bmp" % (font_name, font_size, char))
 
     for (i, byte) in enumerate(list):
         file.write("0x%02x, " % byte)
@@ -119,8 +126,9 @@ def generate_character(char, font, width, height, file):
     # add 2 for width and height
     return len(list) + 2
 
-def generate_font(font_path, font_size, chars):
+def generate_font(font_path, font_size, chars, top_offset = 0):
     font_name = Path(font_path).stem
+    print("Generating font: %s (%d px)" % (font_name, font_size))
 
     file = open("include\\fonts\\font.h", "a")
     file.write("\n")
@@ -146,10 +154,13 @@ def generate_font(font_path, font_size, chars):
     map_pos = 0
 
     # chars = ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "-", "X", "Y", "Z")
-    for (i, char) in enumerate(chars):
+    # height = int(font.getbbox("0")[3])
+    height = font.getmetrics()[0] - top_offset
+    print(font.getmetrics())
+    for char in chars:
         byte = bytes(char, encoding="ascii")[0]
         map[byte] = map_pos
-        map_pos += generate_character(char, font, int(font.getlength(char)), font_size + 5, file)
+        map_pos += generate_character(char, font, int(font.getlength(char)), height, top_offset, file, font_name, font_size)
         # print(font.getlength(char))
         # # text = "0123456789."
         # text_color = 255 #(0, 0, 0)
@@ -165,7 +176,7 @@ def generate_font(font_path, font_size, chars):
     # image.save('obrazek_z_tekstem.bmp')
     file.write("};\n")
 
-    file.write("static const uint16_t font_%s_map_%d[] PROGMEM = {\n" % (font_name, font_size))
+    file.write("static const uint16_t font_%s_%d_map[] PROGMEM = {\n" % (font_name, font_size))
 
     for (i, byte) in map.items():
         file.write("%d /* %d */, " % (byte, i))
@@ -182,8 +193,19 @@ print("Generating fonts images")
 file = open("include\\fonts\\font.h", "w")
 file.write("#include \"Arduino.h\"\n")
 file.close();
-generate_font("fonts/7seg.ttf", 32, ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "-", ",")) # DSEG7Classic-Bold.ttf
-generate_font("fonts/manolomono.otf", 25, ("X", "Y", "Z"))
+# generate_font("fonts/7seg.ttf", 32, ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "-", ",")) # DSEG7Classic-Bold.ttf
+# generate_font("fonts/manolomono.otf", 13, ("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l",
+# generate_font("fonts/manolomono.otf", 25, ("X", "Y", "Z"))
+# generate_font("fonts/manolomono.otf", 41, ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "-"))
+# generate_font("fonts/manolomono.otf", 32, ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "."))
+generate_font("fonts/manolomono.otf", 13, "abcdefghijklmonpqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ")
+generate_font("fonts/manolomono.otf", 15, "abcdefghijklmonpqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.:- ")
+generate_font("fonts/manolomono.otf", 25, "XYZ")
+generate_font("fonts/consolas.ttf", 12, "abcdefghijklmonpqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ")
+generate_font("fonts/consolas.ttf", 32, "0123456789.-", 4)
+generate_font("fonts/consolas.ttf", 44, "0123456789.-", 4)
+# generate_font("fonts/manolomono.otf", 32, "0123456789.-")
+
 print("Converting images to C arrays...")
 find_images()
 print("--------------------------------")

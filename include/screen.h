@@ -5,6 +5,9 @@
 #include "touch.h"
 #include "basepage.h"
 
+#define SCREEN_WIDTH 240
+#define SCREEN_HEIGHT 320
+
 class Screen {
 public:
     Screen(Touch &touch);

@@ -45,7 +45,7 @@ void Screen::loop()
 
 void Screen::clear()
 {
-    tft.fillRect(0, 0, 240, 320, ILI9341_BLACK);
+    tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, ILI9341_BLACK);
 }
 
 void Screen::setCurrentPage(BasePage *page) { 

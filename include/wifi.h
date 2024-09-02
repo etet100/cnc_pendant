@@ -6,12 +6,12 @@
 #include "ESPAsyncTCP.h"
 
 enum WiFiCommmunicatorState {
+    WIFI_DISCONNECTED,
     WIFI_CONNECTING,
     WIFI_CONNECTED,
     WIFI_IP,
     WIFI_CONNECTING_TO_SERVER,
     WIFI_CONNECTED_TO_SERVER,
-    WIFI_DISCONNECTED,
 };
 
 class WiFiCommmunicator : public Communicator {

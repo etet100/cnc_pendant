@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<style>
+    #app {
+        width: 240px;
+        height: 320px;
+        background-color: black;
+        color: white;
+        position: relative;
+        font-family: 'manolomono';
+        /* border: 1px solid gray; */
+        box-shadow: 1px 1px 10px 0px rgba(104, 104, 104, 0.4);
+    }
+
+    #app > #modal {
+        display: none;
+        font-family: manolomono;
+        position: absolute;
+        background-color: rgb(39, 39, 39);
+        left: 0; right: 0;
+        top: 57px;
+        bottom: 57px;
+        border-color: rgb(255, 255, 255);
+        border-width: 5px 0;
+        border-style: solid;
+        padding-left: 10px;
+        padding-top: 10px;
+    }
+
+    #app #modal-title {
+        font-size: 15px;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    #app #modal-buttons > div {
+        width: 30.4%;
+        float: left;
+        text-align: center;
+        height: 33px;
+        background-color: rgb(46, 46, 46);
+        margin-right: 5px;
+        margin-bottom: 5px;
+        /* font-size: 18px; */
+        line-height: 33px;
+    }
+
+    #app #modal-buttons > div.sel {
+        background-color: rgb(0, 16, 34);
+    }
+
+
+    * {
+        box-sizing: border-box;
+    }
+
+    @font-face {
+        font-family: '7seg';
+        src: url('../../fonts/7seg.ttf') format('truetype');
+    }
+
+    @font-face {
+        font-family: 'manolomono';
+        src: url('../../fonts/manolomono.otf') format('opentype');
+    }
+
+    #header {
+        height: 25px;
+        border-bottom: 1px solid gray;
+        padding: 0 5px;;
+    }
+
+    #header > div {
+        float: left;
+        padding: 2px 8px;
+        background-color: rgb(81, 75, 170);
+        height: 17px;
+        line-height: 14px;
+        font-size: 13px;
+        margin-top: 3px;
+        margin-right: 6px;
+        border-radius: 3px;
+    }
+
+    #axes > div {
+        height: 50px;
+        line-height: 50px;
+        border-bottom: 1px solid white;
+        padding-left: 12px;
+    }
+
+    #axes > div.sel {
+        background-color: rgb(10, 55, 68);
+    }
+
+    #axes > div > .pos {
+        /* //font-family: '7seg'; */
+        font-family: 'consolas';
+        font-weight: bold;
+        font-size: 44px;
+    }
+
+    #axes > div > .pos > .g {
+        color: rgb(41, 40, 40);
+    }
+
+    #axes > div > .axis {
+        font-family: 'manolomono';
+        line-height: 48px;
+        font-size: 23px;
+    }
+
+    #middle {
+        height: 50px;
+        border-bottom: 1px solid gray;
+    }
+
+    #middle > div {
+        height: 50px;
+        width: 48%;
+        float: left;
+        text-align: center;
+    }
+
+    #middle > div > .title {
+        margin-top: 3px;
+        font-size: 13px;
+        line-height: 13px;
+    }
+
+    #middle > div > .val {
+        font-family: 'consolas';
+        font-size: 32px;
+        line-height: 30px;
+        /* font-weight: bold; */
+    }
+
+    #buttons {
+        height: 99px;
+        padding: 0;
+        padding-left: 8px;
+        padding-top: 5px;
+    }
+
+    #buttons > button {
+        width: 50px;
+        height: 40px;
+        margin: 0;
+        margin-bottom: 5px;
+        margin-right: 8px;
+        margin-left: 0px;
+        border: 0;
+        background-image: url(../../images/btn2.png);
+        background-size: cover;
+        color: transparent;
+        box-shadow: inset 3px 3px 2px 0 rgba(0, 0, 0, 0.3), inset -3px -3px 2px 0 rgb(0, 0, 0,0.8);
+    }
+    #buttons > button.down {
+        box-shadow: inset -3px -3px 2px 0 rgba(0, 0, 0, 0.3), inset 3px 3px 2px 0 rgba(0, 0, 0, 0.8);
+    }
+
+    #icon_wifi > div {
+        height: 17px;
+        background-color: rgb(114, 0, 245);
+        width: 40px;
+        border-radius: 3px;
+        content: "WiFi";
+        color: white;
+        font-family: consolas;
+        text-align: center;
+        /* font-weight: bold; */
+        font-size: 12px;
+        line-height: 17px;
+        mix-blend-mode: difference;
+        position: relative;
+    }
+
+    #icon_wifi > div > div {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: -1;
+        background-color: rgb(101, 124, 0);
+        border-radius: 3px;
+    }
+
+    #icon_wifi > div > div:after {
+        mix-blend-mode: difference;
+    }
+
+    #icon_wifi > div.wifi1 > div { width: 0%; }
+    #icon_wifi > div.wifi2 > div { width: 20%; }
+    #icon_wifi > div.wifi3 > div { width: 40%; }
+    #icon_wifi > div.wifi4 > div { width: 60%; }
+    #icon_wifi > div.wifi5 > div { width: 80%; }
+    #icon_wifi > div.wifi6 > div { width: 100%; }
+</style>
+<body style="background-color: black;">
+    <br>
+
+    <div id="icon_wifi">
+        <div class="wifi wifi1"><div></div>Wi-Fi</div>
+        <div class="wifi wifi2"><div></div>Wi-Fi</div>
+        <div class="wifi wifi3"><div></div>Wi-Fi</div>
+        <div class="wifi wifi4"><div></div>Wi-Fi</div>
+        <div class="wifi wifi5"><div></div>Wi-Fi</div>
+        <div class="wifi wifi6"><div></div>Wi-Fi</div>
+    </div>
+    <br/>
+    <div id="app">
+        <div id="modal">
+            <div id="modal-title">Select Step Size</div>
+            <div id="modal-buttons">
+                <div>0.001</div>
+                <div>0.01</div>
+                <div>0.1</div>
+
+                <div>0.5</div>
+                <div>1</div>
+                <div class="sel">2</div>
+
+                <div>5</div>
+                <div>10</div>
+                <div>20</div>
+
+                <div>50</div>
+                <div>100</div>
+                <div>200</div>
+            </div>
+        </div>
+        <div id="header">
+            <div>WiFi</div>
+            <div>USB</div>
+            <div>Running</div>
+        </div>
+        <div id="axes">
+            <div id="x">
+                <span class="axis">X</span>
+                <span class="pos"><span class="g">000</span>1,235</span>
+            </div>
+            <div id="x">
+                <span class="axis">Y</span>
+                <span class="pos"><span class="g">000</span>0,005</span>
+            </div>
+            <div id="x" class="sel">
+                <span class="axis">Z</span>
+                <span class="pos"><span class="g"></span>5110,100</span>
+            </div>
+        </div>
+        <div id="middle">
+            <div class="feed">
+                <div class="title">Feed</div>
+                <div class="val">100</div>
+            </div>
+            <div class="speed">
+                <div class="title">Step (mm)</div>
+                <div class="val">0.05</div>
+            </div>
+        </div>
+        <div id="buttons">
+            <button id="up" class="down">Up</button><button id="down">Down</button><button id="left">Left</button><button id="right">Right</button>
+            <button id="up">Up</button><button id="down">Down</button><button id="left">Left</button><button id="right">Right</button>
+        </div>
+    </div>
+</body>
