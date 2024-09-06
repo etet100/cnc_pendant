@@ -7,8 +7,16 @@ float State::getPos(Axis axis) {
     return pos[(int) axis];
 }
 
+Axis State::getSelectedAxis() {
+    return selectedAxis;
+}
+
 void State::setPos(Axis axis, float value) {
     pos[(int) axis] = value;
+}
+
+void State::setSelectedAxis(Axis axis) {
+    selectedAxis = axis;
 }
 
 void State::fillStateMessage(StateMessage &msg) {
@@ -18,6 +26,7 @@ void State::fillStateMessage(StateMessage &msg) {
     msg.x = pos[(int) Axis::X];
     msg.y = pos[(int) Axis::Y];
     msg.z = pos[(int) Axis::Z];
+    msg.selectedAxis = (uint8_t) selectedAxis;
     msg.mode = mode;
 }
 

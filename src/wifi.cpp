@@ -11,7 +11,8 @@
 const char *ssid = WIFI_SSID;
 const char *password = WIFI_PASSWORD;
 
-static void handleData(void* arg, AsyncClient* client, void *data, size_t len) {
+static void handleData(void* arg, AsyncClient* client, void *data, size_t len)
+{
     static CircularBuffer<256> buffer;
     static uint8_t packetType = 255;
     static uint8_t packetSize;

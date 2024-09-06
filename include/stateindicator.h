@@ -23,4 +23,11 @@ class WifiStateIndicator: public StateIndicator
         WiFiCommmunicatorState state;
 };
 
+class AliveIndicator: public StateIndicator
+{
+    public:
+        AliveIndicator(Adafruit_ILI9341& tft, int x, int y) : StateIndicator(tft, x, y, 16, 17) {}
+        void draw() override;
+};
+
 #endif // STATEINDICATOR_H

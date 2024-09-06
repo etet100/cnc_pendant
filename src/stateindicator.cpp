@@ -27,3 +27,10 @@ void WifiStateIndicator::draw()
 {
     drawImage(&tft, x, y, image_wifi + (state * imageSize.width * imageSize.height), &imageSize);
 }
+
+void AliveIndicator::draw()
+{
+    static int state = 0;
+    drawImage(&tft, x, y, image_alive + (state * 16 * 17) , {.width = 16, .height = 17, .size = 16 * 17 * 2});
+    state = (state + 1) % 4;
+}

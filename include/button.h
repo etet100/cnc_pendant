@@ -8,6 +8,7 @@ class Button : public TouchZone, public Drawable {
     public:
         Button(Adafruit_ILI9341& tft, int x, int y, int width, int height);
         void draw() override;
+        bool isTouched(int x, int y) override;
 };
 
 #endif // BUTTON_H_

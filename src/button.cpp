@@ -10,3 +10,10 @@ void Button::draw()
     tft.fillRect(x + 1, y + 1, width - 2, height - 2, ILI9341_BLUE);
     tft.drawRect(x, y, width, height, ILI9341_WHITE);
 }
+
+bool Button::isTouched(int x, int y)
+{
+    Serial.println("Button::isTouched");
+
+    return TouchZone::isTouched(x, y);
+}

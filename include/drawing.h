@@ -39,10 +39,16 @@ void drawText(
     Adafruit_ILI9341* tft,
     uint16_t x, uint16_t y,
     const char* text,
-    uint16_t color = ILI9341_WHITE
+    uint16_t color = ILI9341_WHITE,
+    bool center = false
 );
 
-void drawFloatNumber(Adafruit_ILI9341* tft, uint16_t x, uint16_t y, float number, int padWithZeroesTo = 0);
-void drawIntNumber(Adafruit_ILI9341* tft, uint16_t x, uint16_t y, int number, int padWithZeroesTo = 0);
+// size_t charWidth(byte char_);
+size_t textWidth(const char* text);
+
+void drawFloatNumber(Adafruit_ILI9341* tft, uint16_t x, uint16_t y, float number, const char* format, bool center = false);
+// void drawTextWithPadding(bool center, char buf[10], int padWithZeroesTo, uint16_t& x, Adafruit_ILI9341* tft, uint16_t y);
+// void centerTextWithPadding(char buf[10], int padWithZeroesTo, uint16_t& x);
+void drawIntNumber(Adafruit_ILI9341* tft, uint16_t x, uint16_t y, int number, const char* format, bool center = false);
 
 void drawHLine(Adafruit_ILI9341* tft, uint16_t y, uint16_t color);

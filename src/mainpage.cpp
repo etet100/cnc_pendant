@@ -19,9 +19,15 @@
 #define AXIS_Y (AXIS_X + AXIS_SPACING)
 #define AXIS_Z (AXIS_Y + AXIS_SPACING)
 
-MainPage::MainPage(Adafruit_ILI9341& tft) : BasePage() , wifiIndicator(tft, 10, 3)
+MainPage::MainPage(Adafruit_ILI9341& tft)
+    : BasePage()
+    , wifiIndicator(tft, 10, 3)
+    , axis { AxisWidget(Axis::X, AXIS_X, 'X', tft), AxisWidget(Axis::Y, AXIS_Y, 'Y', tft), AxisWidget(Axis::Z, AXIS_Z, 'Z', tft) }
+    , aliveIndicator(tft, 213, 3)
 {
-    addTouchZone(new TouchZone(5, 5, 240 - 10, 200));
+    for (int i = 0; i < 3; i++) {
+        addTouchZone(&axis[i]);
+    }
 
     this->buttons[0] = new Button(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * 0, BUTTONS_TOP_1, BUTTON_WIDTH, BUTTON_HEIGHT);
     this->buttons[1] = new Button(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * 1, BUTTONS_TOP_1, BUTTON_WIDTH, BUTTON_HEIGHT);
@@ -31,11 +37,22 @@ MainPage::MainPage(Adafruit_ILI9341& tft) : BasePage() , wifiIndicator(tft, 10, 
     this->buttons[5] = new Button(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * 1, BUTTONS_TOP_2, BUTTON_WIDTH, BUTTON_HEIGHT);
     this->buttons[6] = new Button(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * 2, BUTTONS_TOP_2, BUTTON_WIDTH, BUTTON_HEIGHT);
     this->buttons[7] = new Button(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * 3, BUTTONS_TOP_2, BUTTON_WIDTH, BUTTON_HEIGHT);
+
+    for (size_t i = 0; i < 8; i++)
+    {
+        addTouchZone(this->buttons[i]);
+    }
 }
 
 void MainPage::processTouchZone(TouchZone* zone)
 {
     Serial.println("Touched main page zone");
+
+    // if (dynamic_cast<Button*>(zone) != nullptr) {
+    //     Button* button = (Button*)zone;
+    //     //button->toggle();
+    // }
+
     // value += rand() % 10;
     // value *= rand() % 3;
     // if (value > 999999) {
@@ -43,29 +60,29 @@ void MainPage::processTouchZone(TouchZone* zone)
     // }
 }
 
-static uint16_t* image_btn1_()
-{
-    static uint8_t im = 0;
-    switch (im++ % 3) {
-    case 0:
-        return (uint16_t*)image_btn1;
-    case 1:
-        return (uint16_t*)image_btn2;
-    case 2:
-        return (uint16_t*)image_btn3;
-    }
-    return 0;
-}
+// static uint16_t* image_btn1_()
+// {
+//     static uint8_t im = 0;
+//     switch (im++ % 3) {
+//     case 0:
+//         return (uint16_t*)image_btn1;
+//     case 1:
+//         return (uint16_t*)image_btn2;
+//     case 2:
+//         return (uint16_t*)image_btn3;
+//     }
+//     return 0;
+// }
 
-void MainPage::drawAxis(Axis axis, int y, char axisName) {
-    setFont(manolomono, 25);
-    drawChar(tft, 15, y + AXIS_TEXT_OFFSET + 10, axisName);
+// void MainPage::drawAxis(Axis axis, int y, char axisName) {
+//     setFont(manolomono, 25);
+//     drawChar(tft, 15, y + AXIS_TEXT_OFFSET + 10, axisName);
 
-    setFont(consolas, 44);
-    drawFloatNumber(tft, 33, y + AXIS_TEXT_OFFSET, state.getPos(axis), 8);
+//     setFont(consolas, 44);
+//     drawFloatNumber(tft, 33, y + AXIS_TEXT_OFFSET, state.getPos(axis), "%08.2f");
 
-    drawHLine(tft, y + AXIS_SPACING - 1, ILI9341_DARKGREY);
-}
+//     drawHLine(tft, y + AXIS_SPACING - 1, ILI9341_DARKGREY);
+// }
 
 void MainPage::drawButtons() {
     // drawImage(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * 0, BUTTONS_TOP_1, image_btn1_(), &image_btn1_size);
@@ -91,9 +108,9 @@ void MainPage::drawButtons() {
 void MainPage::draw() {
     this->drawButtons();
 
-    this->drawAxis(Axis::X, AXIS_X, 'X');
-    this->drawAxis(Axis::Y, AXIS_Y, 'Y');
-    this->drawAxis(Axis::Z, AXIS_Z, 'Z');
+    // this->drawAxis(Axis::X, AXIS_X, 'X');
+    // this->drawAxis(Axis::Y, AXIS_Y, 'Y');
+    // this->drawAxis(Axis::Z, AXIS_Z, 'Z');
 
     setFont(manolomono, 25);
 
@@ -115,16 +132,55 @@ void MainPage::draw() {
     drawHLine(tft, BUTTONS_TOP, ILI9341_DARKGREY);
 
     setFont(manolomono, 13);
-    drawText(tft, 39, 180, "FEED");
-    drawText(tft, 143, 180, "STEP MM");
+    drawText(tft, 60, 180, "FEED", ILI9341_WHITE, true);
+    drawText(tft, 180, 180, "STEP MM", ILI9341_WHITE, true);
 
     setFont(consolas, 32);
-    drawIntNumber(tft, 19, 199, 123, 5);
-    drawFloatNumber(tft, 123, 199, 123.45, 4);
+    drawIntNumber(tft, 60, 199, 123, "%05d", true);
+    drawFloatNumber(tft, 180, 199, 123.45, "%5.2f", true);
 
     this->wifiIndicator.draw();
+    this->aliveIndicator.draw();
+
+    this->axis[0].draw();
+    this->axis[1].draw();
+    this->axis[2].draw();
 
     setFont(consolas, 12);
-    drawText(tft, 90, 5, "Jogging");
-    drawText(tft, 200, 5, "USB");
+    drawText(tft, 110, 5, "Jogging");
+    drawText(tft, 70, 5, "USB");
+}
+
+AxisWidget::AxisWidget(Axis axis, int y, char axisName, Adafruit_ILI9341& tft)
+    : Drawable(tft, 0, y, 240, AXIS_SPACING), TouchZone(0, y, 240, AXIS_SPACING)
+{
+    this->axis = axis;
+    this->y = y;
+    this->axisName = axisName;
+}
+
+void AxisWidget::draw()
+{
+    setFont(manolomono, 25);
+    drawChar(&tft, 15, y + AXIS_TEXT_OFFSET + 10, axisName);
+
+    if (state.getSelectedAxis() == axis) {
+        tft.fillRect(0, y, 240, AXIS_SPACING, ILI9341_LIGHTGREY);
+    } else {
+        tft.fillRect(0, y, 240, AXIS_SPACING, ILI9341_BLACK);
+    }
+
+    setFont(consolas, 44);
+    drawFloatNumber(&tft, 33, y + AXIS_TEXT_OFFSET, state.getPos(axis), "%08.2f");
+
+    drawHLine(&tft, y + AXIS_SPACING - 1, ILI9341_DARKGREY);
+}
+
+bool AxisWidget::isTouched(int x, int y)
+{
+    if (TouchZone::isTouched(x, y)) {
+        state.setSelectedAxis(axis);
+    }
+
+    return false;
 }

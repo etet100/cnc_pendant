@@ -8,6 +8,7 @@ struct ImageSize {
  uint16_t size;
 };
 
+#include "images/alive.h" // alive.png
 #include "images/btn1.h" // btn1.png
 #include "images/btn2.h" // btn2.png
 #include "images/btn3.h" // btn3.png

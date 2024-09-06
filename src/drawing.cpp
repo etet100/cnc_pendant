@@ -131,48 +131,94 @@ size_t drawChar(
     return width;
 }
 
+inline size_t charWidth(byte char_)
+{
+    if (char_ < 32 || char_ > 128) {
+        return 0;
+    }
+
+    const uint8_t *font_data_ = font_data;
+    font_data_ += pgm_read_word(&font_map[char_ - 32]);
+
+    return pgm_read_byte(font_data_++);
+}
+
+size_t textWidth(const char* text)
+{
+    size_t width = 0;
+    while (*text) {
+        width += charWidth(*text++);
+    }
+
+    return width;
+}
+
+inline void padding(int padTo, size_t length, uint16_t& x, Adafruit_ILI9341* tft, uint16_t y)
+{
+    int toPad = padTo - length;
+    if (toPad > 0) {
+        while (toPad--) {
+            x += drawChar(tft, x, y, '0', BYTE_SWAP(ILI9341_DARKGREY));
+        }
+    }
+}
+
+inline void drawText_(char* text, uint16_t& x, Adafruit_ILI9341* tft, uint16_t y)
+{
+    while (*text) {
+        x += drawChar(tft, x, y, *text++);
+    }
+}
+
 void drawText(
     Adafruit_ILI9341* tft,
     uint16_t x, uint16_t y,
     const char* text,
-    uint16_t color
+    uint16_t color,
+    bool center
 ) {
-    while (*text) {
-        x += drawChar(tft, x, y, *text++, color);
+    if (center) {
+        x -= textWidth(text) / 2;
     }
+
+    drawText_((char*)text, x, tft, y);
 }
 
-void drawIntNumber(Adafruit_ILI9341* tft, uint16_t x, uint16_t y, int number, int padWithZeroesTo) {
+void drawIntNumber(Adafruit_ILI9341* tft, uint16_t x, uint16_t y, int number, const char* format, bool center)
+{
     char buf[8];
-    sprintf(buf, "%d", number);
-    if (padWithZeroesTo > 0) {
-        int toPad = padWithZeroesTo - strlen(buf);
-        while (toPad-- > 0) {
-            x += drawChar(tft, x, y, '0', BYTE_SWAP(ILI9341_DARKGREY));
-            //x += 25;
-        }
-    }
-    for (size_t i = 0; i < strlen(buf); i++) {
-        x += drawChar(tft, x, y, buf[i]);
-        // if (buf[i] == '.') {
-        //     x += 10;
-        // } else {
-            // x += 25;
-        // }
-    }
+    sprintf(buf, format, number);
+
+    drawText(tft, x, y, buf, ILI9341_WHITE, center);
 }
 
-void drawFloatNumber(Adafruit_ILI9341* tft, uint16_t x, uint16_t y, float number, int padWithZeroesTo) {
-    char buf[8];
-    sprintf(buf, "%4.3f", number);
-    if (padWithZeroesTo > 0) {
-        int toPad = padWithZeroesTo - strlen(buf);
-        while (toPad-- > 0) {
-            x += drawChar(tft, x, y, '0', BYTE_SWAP(ILI9341_DARKGREY));
-        }
+void drawFloatNumber(Adafruit_ILI9341* tft, uint16_t x, uint16_t y, float number, const char* format, bool center)
+{
+    char buf[10];
+    sprintf(buf, format, number);
+
+    drawText(tft, x, y, buf, ILI9341_WHITE, center);
+}
+
+// void drawTextWithPadding(bool center, char* buf, int padWithZeroesTo, uint16_t& x, Adafruit_ILI9341* tft, uint16_t y)
+// {
+//     if (center) {
+//         centerTextWithPadding(buf, padWithZeroesTo, x);
+//     }
+
+//     if (padWithZeroesTo) {
+//         padding(padWithZeroesTo, strlen(buf), x, tft, y);
+//     }
+
+//     drawText_(buf, x, tft, y);
+// }
+
+inline void centerTextWithPadding(char* buf, int padWithZeroesTo, uint16_t& x)
+{
+    size_t width = textWidth(buf);
+    int toPad = padWithZeroesTo - strlen(buf);
+    if (toPad > 0) {
+        width += toPad * charWidth('0');
     }
-    size_t len = strlen(buf);
-    for (size_t i = 0; i < len; i++) {
-        x += drawChar(tft, x, y, buf[i]);
-    }
+    x -= (width / 2);
 }

@@ -4,7 +4,7 @@
 class TouchZone {
 public:
     TouchZone(int x, int y, int width, int height);
-    bool isTouched(int x, int y);
+    virtual bool isTouched(int x, int y);
 private:
     int x1, y1, x2, y2;
 };

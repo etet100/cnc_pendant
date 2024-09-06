@@ -2,6 +2,7 @@
 #define COMMUNICATION_H_
 
 #include <stdint.h>
+#include "state.h"
 
 enum class CommunicationMode {
     NONE = 0,
@@ -43,6 +44,7 @@ struct __attribute__ ((packed)) StateMessage
     float y;
     float z;
     CommunicationMode mode;
+    char selectedAxis;
     Footer footer;
 };
 
