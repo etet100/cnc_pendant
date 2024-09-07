@@ -12,10 +12,13 @@ class AxisWidget : public Drawable, public TouchZone {
         AxisWidget(Axis axis, int y, char axisName, Adafruit_ILI9341& tft);
         void draw() override;
         bool isTouched(int x, int y) override;
+
     private:
         int y;
         char axisName;
+        bool selected = false;
         Axis axis;
+        void drawText();
 };
 
 class MainPage : public BasePage {

@@ -1,7 +1,17 @@
 import os, glob
-#import pkg_resources
+import pkg_resources
 from pathlib import Path
 from PIL import Image, ImageFont, ImageDraw
+
+Import("env")
+installed = {pkg.key for pkg in pkg_resources.working_set}
+
+if 'html2image' in installed:
+    pass
+else:
+    env.Execute("$PYTHONEXE -m pip install html2image")
+
+from html2image import Html2Image
 
 def rgb888tobgr565(red, green, blue):
     return ((blue & 0xF8) << 8) | ((green & 0xFC) << 3) | (red >> 3)
@@ -187,6 +197,44 @@ def generate_font(font_path, font_size, chars, top_offset = 0):
 
     file.close()
 
+def generate_colors(spec):
+    file = open("include\\colors.h", "w")
+    file.write("#ifndef H_COLORS\n")
+    file.write("#define H_COLORS\n")
+    file.write("\n")
+    file.write("#include <stdint.h>\n");
+    file.write("#include \"Arduino.h\"\n")
+    file.write("\n")
+
+    for (color1, color2, name) in spec:
+        print("Generating color: %s %d %d" % (name, color1, color2))
+
+        r1 = (color1 >> 11) & 0x1F
+        g1 = (color1 >> 5) & 0x3F
+        b1 = color1 & 0x1F
+
+        r2 = (color2 >> 11) & 0x1F
+        g2 = (color2 >> 5) & 0x3F
+        b2 = color2 & 0x1F
+
+        r_mid1 = int((2 * r1 + r2) / 3)
+        g_mid1 = int((2 * g1 + g2) / 3)
+        b_mid1 = int((2 * b1 + b2) / 3)
+
+        r_mid2 = int((r1 + 2 * r2) / 3)
+        g_mid2 = int((g1 + 2 * g2) / 3)
+        b_mid2 = int((b1 + 2 * b2) / 3)
+
+        color_mid1 = (r_mid1 << 11) | (g_mid1 << 5) | b_mid1
+        color_mid2 = (r_mid2 << 11) | (g_mid2 << 5) | b_mid2
+
+        file.write("static const uint16_t %s[] PROGMEM = {\n" % name.upper())
+        file.write("    0x%04x, 0x%04x, 0x%04x, 0x%04x" % (color2, color_mid2, color_mid1, color1))
+        file.write("};\n")
+
+    file.write("\n#endif\n")
+    file.close()
+
 print("--------------------------------")
 print("Generating fonts images")
 #generate_font("fonts/7seg.ttf", 40) # DSEG7Classic-Bold.ttf
@@ -205,7 +253,29 @@ generate_font("fonts/consolas.ttf", 12, "abcdefghijklmonpqrstuvwxyzABCDEFGHIJKLM
 generate_font("fonts/consolas.ttf", 32, "0123456789.-", 4)
 generate_font("fonts/consolas.ttf", 44, "0123456789.-", 4)
 # generate_font("fonts/manolomono.otf", 32, "0123456789.-")
+print("--------------------------------")
+
+print("Converting HTML to images...")
+
+def html2image(html_file, image_file, size):
+    hti = Html2Image(output_path="./images")
+    hti.screenshot(html_file=html_file, save_as=image_file)
+    img = Image.open("./images/" + image_file)
+    img2 = img.crop((0, 0, size[0], size[1]))
+    img2.save("./images/" + image_file)
+
+html2image("proj/main/wifi.html", "wifi.png", (40, 102))
+html2image("proj/main/alive.html", "alive.png", (16, 68))
+print("--------------------------------")
 
 print("Converting images to C arrays...")
 find_images()
 print("--------------------------------")
+
+generate_colors(
+    (
+        # text color, background color, name
+        (0x0000, 0xFFFF, "white_on_black"),
+        (0x0000, 0xFFFF, "white_on_blue"),
+    )
+)

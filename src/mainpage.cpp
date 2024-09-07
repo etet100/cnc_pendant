@@ -132,8 +132,8 @@ void MainPage::draw() {
     drawHLine(tft, BUTTONS_TOP, ILI9341_DARKGREY);
 
     setFont(manolomono, 13);
-    drawText(tft, 60, 180, "FEED", ILI9341_WHITE, true);
-    drawText(tft, 180, 180, "STEP MM", ILI9341_WHITE, true);
+    drawText(tft, 60, 180, "FEED", true);
+    drawText(tft, 180, 180, "STEP MM", true);
 
     setFont(consolas, 32);
     drawIntNumber(tft, 60, 199, 123, "%05d", true);
@@ -161,19 +161,31 @@ AxisWidget::AxisWidget(Axis axis, int y, char axisName, Adafruit_ILI9341& tft)
 
 void AxisWidget::draw()
 {
+    bool selected = state.isAxisSelected(axis);
+    if (this->selected != selected) {
+        this->selected = selected;
+        fillRect(&tft, 0, y, 240, AXIS_SPACING, selected ? 0x051F : ILI9341_BLACK);
+    }
+
+    drawText();
+    drawHLine(&tft, y + AXIS_SPACING - 1, ILI9341_DARKGREY);
+}
+
+void AxisWidget::drawText()
+{
+    setTextColor(
+        selected ? ILI9341_BLACK : ILI9341_WHITE,
+        selected ? 0x051F : ILI9341_BLACK,
+        true
+    );
+
     setFont(manolomono, 25);
     drawChar(&tft, 15, y + AXIS_TEXT_OFFSET + 10, axisName);
 
-    if (state.getSelectedAxis() == axis) {
-        tft.fillRect(0, y, 240, AXIS_SPACING, ILI9341_LIGHTGREY);
-    } else {
-        tft.fillRect(0, y, 240, AXIS_SPACING, ILI9341_BLACK);
-    }
-
     setFont(consolas, 44);
-    drawFloatNumber(&tft, 33, y + AXIS_TEXT_OFFSET, state.getPos(axis), "%08.2f");
+    drawFloatNumber(&tft, 33, y + AXIS_TEXT_OFFSET, state.getPos(axis), "%08.2f", false);
 
-    drawHLine(&tft, y + AXIS_SPACING - 1, ILI9341_DARKGREY);
+    restoreTextColor();
 }
 
 bool AxisWidget::isTouched(int x, int y)

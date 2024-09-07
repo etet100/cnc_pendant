@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    html, body {
+        margin: 0;
+        padding: 0;
+    }
+
+
+    @font-face {
+        font-family: 'consolas';
+        src: url('../../fonts/Consolas.ttf') format('truetype');
+    }
+
+    #icon_wifi > div {
+        height: 17px;
+        background-color: rgb(114, 0, 245);
+        width: 40px;
+        border-radius: 3px;
+        content: "WiFi";
+        color: white;
+        font-family: consolas;
+        text-align: center;
+        /* font-weight: bold; */
+        font-size: 12px;
+        line-height: 17px;
+        mix-blend-mode: difference;
+        position: relative;
+    }
+
+    #icon_wifi > div > div {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: -1;
+        background-color: rgb(101, 124, 0);
+        border-radius: 3px;
+    }
+
+    #icon_wifi > div > div:after {
+        mix-blend-mode: difference;
+    }
+
+    #icon_wifi > div.wifi1 > div { width: 0%; }
+    #icon_wifi > div.wifi2 > div { width: 20%; }
+    #icon_wifi > div.wifi3 > div { width: 40%; }
+    #icon_wifi > div.wifi4 > div { width: 60%; }
+    #icon_wifi > div.wifi5 > div { width: 80%; }
+    #icon_wifi > div.wifi6 > div { width: 100%; }
+
+</style>
+<body style="background-color: black;">
+    <div id="icon_wifi">
+        <div class="wifi wifi1"><div></div>Wi-Fi</div>
+        <div class="wifi wifi2"><div></div>Wi-Fi</div>
+        <div class="wifi wifi3"><div></div>Wi-Fi</div>
+        <div class="wifi wifi4"><div></div>Wi-Fi</div>
+        <div class="wifi wifi5"><div></div>Wi-Fi</div>
+        <div class="wifi wifi6"><div></div>Wi-Fi</div>
+    </div>
+</body>

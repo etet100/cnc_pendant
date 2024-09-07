@@ -17,7 +17,7 @@ static void handleData(void* arg, AsyncClient* client, void *data, size_t len)
     static uint8_t packetType = 255;
     static uint8_t packetSize;
 
-	Serial.printf("\n data received from %s \n", client->remoteIP().toString().c_str());
+	//Serial.printf("\n data received from %s \n", client->remoteIP().toString().c_str());
 
     if (buffer.free() < len) {
         Serial.println("Buffer overflow");
@@ -47,23 +47,28 @@ static void handleData(void* arg, AsyncClient* client, void *data, size_t len)
                 case (uint8_t)PacketType::STATE: {
                     StateMessage msg;
                     buffer.get((uint8_t*)&msg, packetSize);
-                    Serial.printf("CRC: %d %d %d\n", msg.footer.crc, calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer)), packetSize);
+                    //Serial.printf("CRC: %d %d %d\n", msg.footer.crc, calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer)), packetSize);
                     if (msg.footer.crc != calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer))) {
                         Serial.println("State CRC error");
                         break;
                     }
-                    Serial.printf("State: %f %f %f %d\n", msg.x, msg.y, msg.z, (int)msg.mode);
+                    //Serial.printf("State: %6.2f %6.2f %6.2f %d\n", msg.x, msg.y, msg.z, (int)msg.mode);
+
+                    state.setPos(Axis::X, msg.x);
+                    state.setPos(Axis::Y, msg.y);
+                    state.setPos(Axis::Z, msg.z);
+
                     break;
                 }
                 case (uint8_t)PacketType::WIFI_CONFIG: {
                     WifiConfigMessage msg;
                     buffer.get((uint8_t*)&msg, packetSize);
-                    Serial.printf("CRC: %d %d %d\n", msg.footer.crc, calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer)), packetSize);
+                    //Serial.printf("CRC: %d %d %d\n", msg.footer.crc, calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer)), packetSize);
                     if (msg.footer.crc != calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer))) {
                         Serial.println("Wifi cfg CRC error");
                         break;
                     }
-                    Serial.printf("Wifi config: %s %s %s\n", msg.ssid, msg.password, msg.clientIp);
+                    //Serial.printf("Wifi config: %s %s %s\n", msg.ssid, msg.password, msg.clientIp);
                     break;
                 }
                 case (uint8_t)PacketType::PING: {

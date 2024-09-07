@@ -193,11 +193,10 @@ void setupWatchdog()
 
 void loop()
 {
-    delay(5);
+    delay(10);
 
     static uint32_t lastTime = 0;
-
-    if (millis() - lastTime >= 50) {
+    if (millis() - lastTime >= 25) {
         wifiCommmunicator.loop();
         WiFiCommmunicatorState wifiState = wifiCommmunicator.getState();
         mainPage.wifiIndicator.setState(wifiState);
@@ -214,27 +213,6 @@ void loop()
         // if (buttons.isWheelPressed()) {
         //     Serial.println("Wheel button");
         //     //state.setPos(Z, 3);
-        // }
-        // switch (wifiState)
-        // {
-        //     case WIFI_DISCONNECTED:
-        //         state.setPos(Axis::Z, 0);
-        //         break;
-        //     case WIFI_CONNECTING:
-        //         state.setPos(Axis::Z, 1);
-        //         break;
-        //     case WIFI_CONNECTED:
-        //         state.setPos(Axis::Z, 2);
-        //         break;
-        //     case WIFI_IP:
-        //         state.setPos(Axis::Z, 3);
-        //         break;
-        //     case WIFI_CONNECTED_TO_SERVER:
-        //         state.setPos(Axis::Z, 5);
-        //         break;
-        //     case WIFI_CONNECTING_TO_SERVER:
-        //         state.setPos(Axis::Z, 4);
-        //         break;
         // }
         // serialCommunicator.loop();
         // wheel.loop();

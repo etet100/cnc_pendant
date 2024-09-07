@@ -4,21 +4,44 @@
 #include "nbSPI.h"
 #include "screen.h"
 
-static const uint8_t *font_data = nullptr;
-static const uint16_t *font_map = nullptr;
+static const uint8_t *fontData = nullptr;
+static const uint16_t *fontMap = nullptr;
+
+static uint16_t textColor = ILI9341_WHITE;
+static uint16_t bgColor = ILI9341_BLACK;
+
+static uint16_t prevTextColor = ILI9341_WHITE;
+static uint16_t prevBgColor = ILI9341_BLACK;
+
 
 inline static void writeAndWait(uint16_t* buf, uint16_t bytes)
 {
     nbSPI_writeBytes((uint8_t*)buf, bytes);
     while (nbSPI_isBusy()) {
-        delayMicroseconds(3);
+        delayMicroseconds(2);
     };
 }
 
 void setFont_(const uint8_t *data, const uint16_t *map)
 {
-    font_data = data;
-    font_map = map;
+    fontData = data;
+    fontMap = map;
+}
+
+void setTextColor(uint16_t textColor_, uint16_t bgColor_, bool save)
+{
+    if (save) {
+        prevTextColor = textColor;
+        prevBgColor = bgColor;
+    }
+    textColor = BYTE_SWAP(textColor_);
+    bgColor = BYTE_SWAP(bgColor_);
+}
+
+void restoreTextColor()
+{
+    textColor = prevTextColor;
+    bgColor = prevBgColor;
 }
 
 void drawImage(
@@ -71,10 +94,29 @@ void drawHLine(Adafruit_ILI9341* tft, uint16_t y, uint16_t color) {
     tft->startWrite();
     tft->setAddrWindow(0, y, SCREEN_WIDTH, 1);
     uint16_t* buf = (uint16_t*)malloc(SCREEN_WIDTH * 2);
+    color = BYTE_SWAP(color);
+    uint16_t* pos = buf;
     for (size_t i = 0; i < SCREEN_WIDTH; i++) {
-        buf[i] = BYTE_SWAP(color);
+        *pos++ = color;
     }
     writeAndWait(buf, SCREEN_WIDTH * 2);
+    tft->endWrite();
+    free(buf);
+}
+
+void fillRect(Adafruit_ILI9341* tft, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t color) {
+    tft->startWrite();
+    tft->setAddrWindow(x, y, width, height);
+    uint16_t widthBytes = width * 2;
+    uint16_t* buf = (uint16_t*)malloc(widthBytes);
+    color = BYTE_SWAP(color);
+    uint16_t* pos = buf;
+    while (width--) {
+        *pos++ = color;
+    }
+    while (height--) {
+        writeAndWait(buf, widthBytes);
+    }
     tft->endWrite();
     free(buf);
 }
@@ -82,15 +124,14 @@ void drawHLine(Adafruit_ILI9341* tft, uint16_t y, uint16_t color) {
 size_t drawChar(
     Adafruit_ILI9341* tft,
     uint16_t x, uint16_t y,
-    byte char_,
-    uint16_t color
+    byte char_
 ) {
     if (char_ < 32 || char_ > 128) {
         return 0;
     }
 
-    const uint8_t *font_data_ = font_data;
-    font_data_ += pgm_read_word(&font_map[char_ - 32]);
+    const uint8_t *font_data_ = fontData;
+    font_data_ += pgm_read_word(&fontMap[char_ - 32]);
     uint8_t width = pgm_read_byte(font_data_++);
     uint8_t height = pgm_read_byte(font_data_++);
     if (width == 0 || height == 0 || width > 100 || height > 100) {
@@ -106,7 +147,7 @@ size_t drawChar(
         while (font_byte--) {
             switch (font_byte_color) {
                 case 0:
-                    *pos++ = BYTE_SWAP(ILI9341_BLACK);
+                    *pos++ = bgColor;
                     break;
                 case 1:
                     *pos++ = BYTE_SWAP(ILI9341_DARKGREY);
@@ -115,7 +156,7 @@ size_t drawChar(
                     *pos++ = BYTE_SWAP(ILI9341_LIGHTGREY);
                     break;
                 case 3:
-                    *pos++ = BYTE_SWAP(ILI9341_WHITE);
+                    *pos++ = textColor;
                     break;
             }
             //*pos++ = font_byte_color == 0 ? BYTE_SWAP(ILI9341_BLACK) : color;
@@ -137,8 +178,8 @@ inline size_t charWidth(byte char_)
         return 0;
     }
 
-    const uint8_t *font_data_ = font_data;
-    font_data_ += pgm_read_word(&font_map[char_ - 32]);
+    const uint8_t *font_data_ = fontData;
+    font_data_ += pgm_read_word(&fontMap[char_ - 32]);
 
     return pgm_read_byte(font_data_++);
 }
@@ -158,7 +199,7 @@ inline void padding(int padTo, size_t length, uint16_t& x, Adafruit_ILI9341* tft
     int toPad = padTo - length;
     if (toPad > 0) {
         while (toPad--) {
-            x += drawChar(tft, x, y, '0', BYTE_SWAP(ILI9341_DARKGREY));
+            x += drawChar(tft, x, y, '0');
         }
     }
 }
@@ -174,7 +215,6 @@ void drawText(
     Adafruit_ILI9341* tft,
     uint16_t x, uint16_t y,
     const char* text,
-    uint16_t color,
     bool center
 ) {
     if (center) {
@@ -189,7 +229,7 @@ void drawIntNumber(Adafruit_ILI9341* tft, uint16_t x, uint16_t y, int number, co
     char buf[8];
     sprintf(buf, format, number);
 
-    drawText(tft, x, y, buf, ILI9341_WHITE, center);
+    drawText(tft, x, y, buf, center);
 }
 
 void drawFloatNumber(Adafruit_ILI9341* tft, uint16_t x, uint16_t y, float number, const char* format, bool center)
@@ -197,21 +237,8 @@ void drawFloatNumber(Adafruit_ILI9341* tft, uint16_t x, uint16_t y, float number
     char buf[10];
     sprintf(buf, format, number);
 
-    drawText(tft, x, y, buf, ILI9341_WHITE, center);
+    drawText(tft, x, y, buf, center);
 }
-
-// void drawTextWithPadding(bool center, char* buf, int padWithZeroesTo, uint16_t& x, Adafruit_ILI9341* tft, uint16_t y)
-// {
-//     if (center) {
-//         centerTextWithPadding(buf, padWithZeroesTo, x);
-//     }
-
-//     if (padWithZeroesTo) {
-//         padding(padWithZeroesTo, strlen(buf), x, tft, y);
-//     }
-
-//     drawText_(buf, x, tft, y);
-// }
 
 inline void centerTextWithPadding(char* buf, int padWithZeroesTo, uint16_t& x)
 {

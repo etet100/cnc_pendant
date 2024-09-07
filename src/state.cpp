@@ -11,6 +11,10 @@ Axis State::getSelectedAxis() {
     return selectedAxis;
 }
 
+bool State::isAxisSelected(Axis axis) {
+    return selectedAxis == axis;
+}
+
 void State::setPos(Axis axis, float value) {
     pos[(int) axis] = value;
 }

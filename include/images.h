@@ -13,8 +13,6 @@ struct ImageSize {
 #include "images/btn2.h" // btn2.png
 #include "images/btn3.h" // btn3.png
 #include "images/btn4.h" // btn4.png
-#include "images/image.h" // image.png
-#include "images/test.h" // test.png
 #include "images/wifi.h" // wifi.png
 #include "images/logo00.h" // logo00.png
 #include "images/logo01.h" // logo01.png

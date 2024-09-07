@@ -28,18 +28,19 @@ void setFont_(const uint8_t *data, const uint16_t *map);
 
 #define setFont(name, size) setFont_((const uint8_t*)font_##name##_##size, (const uint16_t*)font_##name##_##size##_map)
 
+void setTextColor(uint16_t textColor_, uint16_t bgColor_, bool save = true);
+void restoreTextColor();
+
 size_t drawChar(
     Adafruit_ILI9341* tft,
     uint16_t x, uint16_t y,
-    byte char_,
-    uint16_t color = ILI9341_WHITE
+    byte char_
 );
 
 void drawText(
     Adafruit_ILI9341* tft,
     uint16_t x, uint16_t y,
     const char* text,
-    uint16_t color = ILI9341_WHITE,
     bool center = false
 );
 
@@ -47,8 +48,8 @@ void drawText(
 size_t textWidth(const char* text);
 
 void drawFloatNumber(Adafruit_ILI9341* tft, uint16_t x, uint16_t y, float number, const char* format, bool center = false);
-// void drawTextWithPadding(bool center, char buf[10], int padWithZeroesTo, uint16_t& x, Adafruit_ILI9341* tft, uint16_t y);
-// void centerTextWithPadding(char buf[10], int padWithZeroesTo, uint16_t& x);
 void drawIntNumber(Adafruit_ILI9341* tft, uint16_t x, uint16_t y, int number, const char* format, bool center = false);
 
 void drawHLine(Adafruit_ILI9341* tft, uint16_t y, uint16_t color);
+
+void fillRect(Adafruit_ILI9341* tft, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t color);

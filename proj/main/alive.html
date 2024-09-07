@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    html, body {
+        margin: 0;
+        padding: 0;
+    }
+
+    @font-face {
+        font-family: '7seg';
+        src: url('../../fonts/7seg.ttf') format('truetype');
+    }
+
+    @font-face {
+        font-family: 'manolomono';
+        src: url('../../fonts/manolomono.otf') format('opentype');
+    }
+
+    #icon_alive {
+        /* box-shadow: 1px 1px 10px 0px rgba(104, 104, 104, 0.4); */
+        width: 17px;
+    }
+    #icon_alive > div {
+        height: 17px;
+        width: 16px;
+        background-color: black
+    }
+    #icon_alive > div > div {
+        border: 3px solid rgb(114, 0, 245);
+        margin: 0 auto;
+    }
+    #icon_alive > div._1 > div {
+        background-color: rgb(114, 0, 245);
+        border: 0;
+        width: 5px;
+        height: 5px;
+        border-radius: 4px;
+    }
+    #icon_alive > div._1 {
+        padding-top: 5px;
+    }
+    #icon_alive > div._2 > div {
+        width: 8px;
+        height: 8px;
+        border-radius: 5px;
+    }
+    #icon_alive > div._2 {
+        padding-top: 4px;
+    }
+    #icon_alive > div._3 > div {
+        width: 11px;
+        height: 11px;
+        border-radius: 5px;
+    }
+    #icon_alive > div._3 {
+        padding-top: 2.5px;
+    }
+    #icon_alive > div._4 > div {
+        width: 16px;
+        height: 17px;
+        border-radius: 8px;
+    }
+</style>
+<body style="background-color: black;">
+    <div id="icon_alive">
+        <div class="_1"><div>&nbsp;</div></div>
+        <div class="_2"><div>&nbsp;</div></div>
+        <div class="_3"><div>&nbsp;</div></div>
+        <div class="_4"><div>&nbsp;</div></div>
+    </div>
+</body>

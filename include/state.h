@@ -21,6 +21,7 @@ public:
     void setPos(Axis axis, float value);
     void setSelectedAxis(Axis axis);
     void fillStateMessage(StateMessage &msg);
+    bool isAxisSelected(Axis axis);
 private:
     float pos[3] = {0, 100.12, 2322.315};
     CommunicationMode mode = CommunicationMode::NONE;
