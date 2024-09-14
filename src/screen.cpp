@@ -2,6 +2,7 @@
 #include <HardwareSerial.h>
 #include <Arduino.h>
 #include "drawing.h"
+#include "colors.h"
 
 #define ADAGFX_PIN_CS       D8    // Display chip select
 #define ADAGFX_PIN_DC       D2    // Display SPI data/command
@@ -21,6 +22,8 @@ void Screen::begin()
     tft.setRotation(2);
 
     clear();
+
+    setTextColor(WHITE_ON_BLACK);
 
     Serial.println(" Result: initialized");
 }

@@ -1,108 +1,109 @@
 #include "wifi.h"
 #include "ESPAsyncTCP.h"
 #include <Arduino.h>
-//#include <ArduinoJson.h>
 #include "../config.h"
 #include "state.h"
 #include "circularbuffer.h"
-//#include <CircularBuffer.hpp>
 #include <CRC.h>
 
 const char *ssid = WIFI_SSID;
 const char *password = WIFI_PASSWORD;
 
-static void handleData(void* arg, AsyncClient* client, void *data, size_t len)
-{
-    static CircularBuffer<256> buffer;
-    static uint8_t packetType = 255;
-    static uint8_t packetSize;
-
-	//Serial.printf("\n data received from %s \n", client->remoteIP().toString().c_str());
-
-    if (buffer.free() < len) {
-        Serial.println("Buffer overflow");
-    } else {
-        buffer.push((uint8_t*)data, len);
-    }
-
-    while (buffer.size()) {
-        if (packetType == 255) {
-            while (buffer.size() >= sizeof(Header)) {
-                if (
-                    buffer[COMM_HEAD_START_1_POS] != COMM_START_BYTE_1 || buffer[COMM_HEAD_START_2_POS] != COMM_START_BYTE_2  ||
-                    buffer[COMM_HEAD_TYPE_POS] >= (uint8_t)PacketType::MAX || buffer[COMM_HEAD_SIZE_POS] > COMM_MAX_PACKET_SIZE
-                ) {
-                    buffer.skip(1);
-                    continue;
-                }
-
-                packetType = buffer[COMM_HEAD_TYPE_POS];
-                packetSize = buffer[COMM_HEAD_SIZE_POS];
-                break;
-            }
-        }
-
-        if (packetType < 255 && buffer.size() >= packetSize) {
-            switch (packetType) {
-                case (uint8_t)PacketType::STATE: {
-                    StateMessage msg;
-                    buffer.get((uint8_t*)&msg, packetSize);
-                    //Serial.printf("CRC: %d %d %d\n", msg.footer.crc, calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer)), packetSize);
-                    if (msg.footer.crc != calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer))) {
-                        Serial.println("State CRC error");
-                        break;
-                    }
-                    //Serial.printf("State: %6.2f %6.2f %6.2f %d\n", msg.x, msg.y, msg.z, (int)msg.mode);
-
-                    state.setPos(Axis::X, msg.x);
-                    state.setPos(Axis::Y, msg.y);
-                    state.setPos(Axis::Z, msg.z);
-
-                    break;
-                }
-                case (uint8_t)PacketType::WIFI_CONFIG: {
-                    WifiConfigMessage msg;
-                    buffer.get((uint8_t*)&msg, packetSize);
-                    //Serial.printf("CRC: %d %d %d\n", msg.footer.crc, calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer)), packetSize);
-                    if (msg.footer.crc != calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer))) {
-                        Serial.println("Wifi cfg CRC error");
-                        break;
-                    }
-                    //Serial.printf("Wifi config: %s %s %s\n", msg.ssid, msg.password, msg.clientIp);
-                    break;
-                }
-                case (uint8_t)PacketType::PING: {
-                    PingMessage msg;
-                    buffer.get((uint8_t*)&msg, packetSize);
-                    if (msg.footer.crc != calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer))) {
-                        Serial.println("Ping CRC error");
-                        break;
-                    }
-                    Serial.println("Ping");
-                    break;
-                }
-            }
-
-            packetType = 255;
-            continue;
-        }
-
-        return;
-    }
-}
-
 WiFiCommmunicator::WiFiCommmunicator() : commState(WIFI_DISCONNECTED)
 {
-    client.onData(&handleData);
+    client.onData([this](void* arg, AsyncClient* client, void *data, size_t len) {
+        static uint8_t packetType = 255;
+        static uint8_t packetSize;
+
+        //Serial.printf("\n data received from %s \n", client->remoteIP().toString().c_str());
+
+        if (buffer.free() < len) {
+            Serial.println("Buffer overflow");
+        } else {
+            buffer.push((uint8_t*)data, len);
+        }
+
+        while (buffer.size()) {
+            if (packetType == 255) {
+                while (buffer.size() >= sizeof(Header)) {
+                    if (
+                        buffer[COMM_HEAD_START_1_POS] != COMM_START_BYTE_1 || buffer[COMM_HEAD_START_2_POS] != COMM_START_BYTE_2  ||
+                        buffer[COMM_HEAD_TYPE_POS] >= (uint8_t)PacketType::MAX || buffer[COMM_HEAD_SIZE_POS] > COMM_MAX_PACKET_SIZE
+                    ) {
+                        buffer.skip(1);
+                        continue;
+                    }
+
+                    packetType = buffer[COMM_HEAD_TYPE_POS];
+                    packetSize = buffer[COMM_HEAD_SIZE_POS];
+                    break;
+                }
+            }
+
+            if (packetType < 255 && buffer.size() >= packetSize) {
+                switch (packetType) {
+                    case (uint8_t)PacketType::STATE: {
+                        StateMessage msg;
+                        buffer.get((uint8_t*)&msg, packetSize);
+                        //Serial.printf("CRC: %d %d %d\n", msg.footer.crc, calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer)), packetSize);
+                        if (msg.footer.crc != calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer))) {
+                            Serial.println("State CRC error");
+                            break;
+                        }
+                        //Serial.printf("State: %6.2f %6.2f %6.2f %d\n", msg.x, msg.y, msg.z, (int)msg.mode);
+
+                        state.setPos(Axis::X, msg.x);
+                        state.setPos(Axis::Y, msg.y);
+                        state.setPos(Axis::Z, msg.z);
+                        state.triggerUpdatedEvent();
+
+                        this->updateLastMessageTime();
+                        break;
+                    }
+                    case (uint8_t)PacketType::WIFI_CONFIG: {
+                        WifiConfigMessage msg;
+                        buffer.get((uint8_t*)&msg, packetSize);
+                        //Serial.printf("CRC: %d %d %d\n", msg.footer.crc, calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer)), packetSize);
+                        if (msg.footer.crc != calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer))) {
+                            Serial.println("Wifi cfg CRC error");
+                            break;
+                        }
+                        //Serial.printf("Wifi config: %s %s %s\n", msg.ssid, msg.password, msg.clientIp);
+
+                        this->updateLastMessageTime();
+                        break;
+                    }
+                    case (uint8_t)PacketType::PING: {
+                        PingMessage msg;
+                        buffer.get((uint8_t*)&msg, packetSize);
+                        if (msg.footer.crc != calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer))) {
+                            Serial.println("Ping CRC error");
+                            break;
+                        }
+                        Serial.println("Ping");
+
+                        this->updateLastMessageTime();
+                        break;
+                    }
+                }
+
+                packetType = 255;
+                continue;
+            }
+        }
+    });
+
 	//client.onConnect(&onConnect);
     client.onConnect([this](void* arg, AsyncClient* client) {
         Serial.println("connected");
-        this->commState = WIFI_CONNECTED_TO_SERVER;
+        this->setCommState(WIFI_CONNECTED_TO_SERVER);
     });
+
     client.onDisconnect([this](void* arg, AsyncClient* client) {
         Serial.println("disconnected");
-        this->commState = WIFI_IP;
+        this->setCommState(WIFI_IP);
     });
+
     client.onTimeout([](void* arg, AsyncClient* client, uint32_t time) {
         Serial.println("timeout");
         //client->close();
@@ -134,7 +135,7 @@ void WiFiCommmunicator::begin()
         this->connect();
     });
     wifiConnectedHandler = WiFi.onStationModeConnected([this](const WiFiEventStationModeConnected &event) {
-        this->commState = WIFI_CONNECTED;
+        this->setCommState(WIFI_CONNECTED);
         Serial.println(" WiFi, connected");
     });
     // WiFi.onStationModeConnected([](const WiFiEventStationModeConnected &event) {
@@ -148,7 +149,23 @@ void WiFiCommmunicator::connect()
 {
     Serial.println("Connecting to server...");
     this->client.connect("192.168.1.2", 5555);
-    this->commState = WIFI_CONNECTING_TO_SERVER;
+    this->setCommState(WIFI_CONNECTING_TO_SERVER);
+}
+
+void WiFiCommmunicator::disconnect()
+{
+    this->client.close();
+    this->setCommState(WIFI_IP);
+}
+
+void WiFiCommmunicator::updateLastMessageTime()
+{
+    this->lastMessageTime = millis();
+}
+
+void WiFiCommmunicator::setCommState(WiFiCommmunicatorState state) {
+    this->commState = state;
+    eventManager.queueEvent(EventType::WiFiStateChanged, (int)state);
 }
 
 void WiFiCommmunicator::loop()
@@ -161,24 +178,10 @@ void WiFiCommmunicator::loop()
 
     if (millis() - lastTime >= 500)
     {
-        if (this->commState == WIFI_CONNECTED_TO_SERVER)
+        if (this->commState == WIFI_CONNECTED_TO_SERVER && millis() - this->lastMessageTime >= 2000)
         {
-            // StateMessage msg;
-            // state.fillStateMessage(msg);
-            // client.write((const char *)&msg, sizeof(msg));
-
-            // JsonDocument doc;
-            // doc["x"] = state.getPos(X);
-            // doc["y"] = state.getPos(Y);
-            // doc["z"] = state.getPos(Z);
-            // doc["s"] = this->commState;
-
-            // std::string output;
-
-            // serializeMsgPack(doc, output);
-            //serializeJson(doc, output);
-
-            // client.write(output.data(), output.length());
+            Serial.println("Wifi timeout. Disconnecting...");
+            this->disconnect();
         }
     }
 }

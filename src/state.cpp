@@ -1,4 +1,5 @@
 #include "state.h"
+#include "globals.h"
 
 State::State() {
 }
@@ -15,8 +16,12 @@ bool State::isAxisSelected(Axis axis) {
     return selectedAxis == axis;
 }
 
+void State::triggerUpdatedEvent() {
+    eventManager.queueEvent(EventType::StateChanged, 0);
+}
+
 void State::setPos(Axis axis, float value) {
-    pos[(int) axis] = value;
+    pos[(int)axis] = value;
 }
 
 void State::setSelectedAxis(Axis axis) {

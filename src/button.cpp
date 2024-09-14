@@ -1,14 +1,16 @@
 #include "button.h"
 #include "drawing.h"
 
-Button::Button(Adafruit_ILI9341 &tft, int x, int y, int width, int height) : TouchZone(x, y, width, height), Drawable(tft, x, y, width, height)
+Button::Button(Adafruit_ILI9341& tft, int x, int y, int width, int height, const uint16_t* image)
+    : TouchZone(x, y, width, height)
+    , Drawable(tft, x, y, width, height)
+    , image(image)
 {
 }
 
-void Button::draw()
+void Button::draw_()
 {
-    tft.fillRect(x + 1, y + 1, width - 2, height - 2, ILI9341_BLUE);
-    tft.drawRect(x, y, width, height, ILI9341_WHITE);
+    drawImage(&tft, x, y, image, width, height);
 }
 
 bool Button::isTouched(int x, int y)

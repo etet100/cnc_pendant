@@ -1,4 +1,5 @@
 import os, glob
+import hashlib
 import pkg_resources
 from pathlib import Path
 from PIL import Image, ImageFont, ImageDraw
@@ -229,7 +230,7 @@ def generate_colors(spec):
         color_mid2 = (r_mid2 << 11) | (g_mid2 << 5) | b_mid2
 
         file.write("static const uint16_t %s[] PROGMEM = {\n" % name.upper())
-        file.write("    0x%04x, 0x%04x, 0x%04x, 0x%04x" % (color2, color_mid2, color_mid1, color1))
+        file.write("    0x%04x, 0x%04x, 0x%04x, 0x%04x" % (swap16(color2), swap16(color_mid2), swap16(color_mid1), swap16(color1)))
         file.write("};\n")
 
     file.write("\n#endif\n")
@@ -258,14 +259,43 @@ print("--------------------------------")
 print("Converting HTML to images...")
 
 def html2image(html_file, image_file, size):
-    hti = Html2Image(output_path="./images")
-    hti.screenshot(html_file=html_file, save_as=image_file)
+    if len(size) == 2:
+        size = size + (0, )
+
+    html = Path(html_file).read_text()
+    absolute = str(Path(html_file).parent.absolute()).replace("\\", "/")
+    md5_file = absolute + "/" + image_file + ".md5"
+    print(md5_file)
+    md5 = hashlib.md5(html.encode()).hexdigest()
+    if Path(md5_file).exists():
+        md5_saved = Path(md5_file).read_text()
+        if (md5 == md5_saved):
+            print(f"Skipping {html_file} {image_file}")
+            return
+    Path(md5_file).write_text(md5)
+
+    html = html.replace("url('", f"url('{absolute}/")
+    html = html.replace("href=\"", f"href=\"{absolute}/")
+
+    # '--virtual-time-budget=100',
+    hti = Html2Image(output_path="./images", keep_temp_files=True, custom_flags=['--hide-scrollbars', '--no-sandbox'])
+    hti.screenshot(html_str=html, save_as=image_file)
     img = Image.open("./images/" + image_file)
-    img2 = img.crop((0, 0, size[0], size[1]))
+    img2 = img.crop((0, size[2], size[0], size[2] + size[1]))
     img2.save("./images/" + image_file)
 
 html2image("proj/main/wifi.html", "wifi.png", (40, 102))
 html2image("proj/main/alive.html", "alive.png", (16, 68))
+html2image("proj/main/buttons.html", "btn_start.png", (53, 40, 0))
+html2image("proj/main/buttons.html", "btn_stop.png", (53, 40, 80))
+html2image("proj/main/buttons.html", "btn_pause.png", (53, 40, 160))
+html2image("proj/main/buttons.html", "btn_home.png", (53, 40, 240))
+html2image("proj/main/buttons.html", "btn_spindle.png", (53, 40, 320))
+html2image("proj/main/buttons.html", "btn_reset.png", (53, 40, 400))
+html2image("proj/main/buttons.html", "btn_settings.png", (53, 40, 480))
+html2image("proj/main/buttons.html", "btn_power.png", (53, 40, 560))
+# html2image("proj/main/buttons.html", "btn_cancel.png", (53, 40, 640))
+# html2image("proj/main/buttons.html", "btn_close.png", (53, 40, 720))
 print("--------------------------------")
 
 print("Converting images to C arrays...")
@@ -275,7 +305,7 @@ print("--------------------------------")
 generate_colors(
     (
         # text color, background color, name
-        (0x0000, 0xFFFF, "white_on_black"),
-        (0x0000, 0xFFFF, "white_on_blue"),
+        (0xFFFF, 0x0000, "white_on_black"),
+        (0xFFFF, 0x051F, "white_on_blue"),
     )
 )

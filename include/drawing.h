@@ -28,7 +28,7 @@ void setFont_(const uint8_t *data, const uint16_t *map);
 
 #define setFont(name, size) setFont_((const uint8_t*)font_##name##_##size, (const uint16_t*)font_##name##_##size##_map)
 
-void setTextColor(uint16_t textColor_, uint16_t bgColor_, bool save = true);
+void setTextColor(const uint16_t* color_, bool save = false);
 void restoreTextColor();
 
 size_t drawChar(

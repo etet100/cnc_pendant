@@ -13,17 +13,17 @@ StateIndicator::StateIndicator(Adafruit_ILI9341& tft, int x, int y, ImageSize& i
 {
 }
 
-// void StateIndicator::draw()
-// {
-// }
-
 WifiStateIndicator::WifiStateIndicator(Adafruit_ILI9341& tft, int x, int y)
     : StateIndicator(tft, x, y, 40, 17),
     imageSize({ .width = 40, .height = 17, .size = 40 * 17 * 2 })
 {
+    eventManager.addListener(EventType::WiFiStateChanged, [this](int event, int param) {
+        this->state = (WiFiCommmunicatorState)param;
+        this->invalidate();
+    });
 }
 
-void WifiStateIndicator::draw()
+void WifiStateIndicator::draw_()
 {
     drawImage(&tft, x, y, image_wifi + (state * imageSize.width * imageSize.height), &imageSize);
 }

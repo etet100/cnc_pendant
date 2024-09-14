@@ -3,16 +3,13 @@
 #include "fonts/font.h"
 #include "nbSPI.h"
 #include "screen.h"
+#include "colors.h"
 
 static const uint8_t *fontData = nullptr;
 static const uint16_t *fontMap = nullptr;
 
-static uint16_t textColor = ILI9341_WHITE;
-static uint16_t bgColor = ILI9341_BLACK;
-
-static uint16_t prevTextColor = ILI9341_WHITE;
-static uint16_t prevBgColor = ILI9341_BLACK;
-
+static uint16_t color[4];
+static uint16_t prevColor[4];
 
 inline static void writeAndWait(uint16_t* buf, uint16_t bytes)
 {
@@ -28,20 +25,20 @@ void setFont_(const uint8_t *data, const uint16_t *map)
     fontMap = map;
 }
 
-void setTextColor(uint16_t textColor_, uint16_t bgColor_, bool save)
+void setTextColor(const uint16_t* color_, bool save)
 {
     if (save) {
-        prevTextColor = textColor;
-        prevBgColor = bgColor;
+        memcpy(prevColor, color, sizeof(color));
     }
-    textColor = BYTE_SWAP(textColor_);
-    bgColor = BYTE_SWAP(bgColor_);
+    color[0] = pgm_read_word(&color_[0]);
+    color[1] = pgm_read_word(&color_[1]);
+    color[2] = pgm_read_word(&color_[2]);
+    color[3] = pgm_read_word(&color_[3]);
 }
 
 void restoreTextColor()
 {
-    textColor = prevTextColor;
-    bgColor = prevBgColor;
+    memcpy(color, prevColor, sizeof(color));
 }
 
 void drawImage(
@@ -145,21 +142,7 @@ size_t drawChar(
         uint8_t font_byte_color = font_byte & 0b11;
         font_byte >>= 2;
         while (font_byte--) {
-            switch (font_byte_color) {
-                case 0:
-                    *pos++ = bgColor;
-                    break;
-                case 1:
-                    *pos++ = BYTE_SWAP(ILI9341_DARKGREY);
-                    break;
-                case 2:
-                    *pos++ = BYTE_SWAP(ILI9341_LIGHTGREY);
-                    break;
-                case 3:
-                    *pos++ = textColor;
-                    break;
-            }
-            //*pos++ = font_byte_color == 0 ? BYTE_SWAP(ILI9341_BLACK) : color;
+            *pos++ = color[font_byte_color];
         }
         font_byte = pgm_read_byte(font_data_++);
     }

@@ -24,16 +24,28 @@ void Buttons::loop()
 {
     regs = pca9536d.readReg();
     wheel = digitalRead(BUTTON_WHEEL_PIN) == LOW;
+    if (wheel && wheelPressedCallback)
+    {
+        wheelPressedCallback(1);
+    }
 }
 
-bool Buttons::isTopPressed() {
+bool Buttons::isTopPressed()
+{
     return (!(regs & BUTTON_TOP_BIT));
 }
 
-bool Buttons::isBottomPressed() {
+bool Buttons::isBottomPressed()
+{
     return (!(regs & BUTTON_BOTTOM_BIT));
 }
 
-bool Buttons::isWheelPressed() {
+bool Buttons::isWheelPressed()
+{
     return wheel;
+}
+
+void Buttons::onWheelPressed(Callback callback)
+{
+    this->wheelPressedCallback = callback;
 }

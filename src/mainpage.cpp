@@ -3,8 +3,7 @@
 #include "images.h"
 #include "drawing.h"
 #include "fonts/font.h"
-
-//static int value = 0;
+#include "colors.h"
 
 #define BUTTON_HEIGHT 40
 #define BUTTON_WIDTH 53
@@ -29,27 +28,48 @@ MainPage::MainPage(Adafruit_ILI9341& tft)
         addTouchZone(&axis[i]);
     }
 
-    this->buttons[0] = new Button(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * 0, BUTTONS_TOP_1, BUTTON_WIDTH, BUTTON_HEIGHT);
-    this->buttons[1] = new Button(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * 1, BUTTONS_TOP_1, BUTTON_WIDTH, BUTTON_HEIGHT);
-    this->buttons[2] = new Button(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * 2, BUTTONS_TOP_1, BUTTON_WIDTH, BUTTON_HEIGHT);
-    this->buttons[3] = new Button(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * 3, BUTTONS_TOP_1, BUTTON_WIDTH, BUTTON_HEIGHT);
-    this->buttons[4] = new Button(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * 0, BUTTONS_TOP_2, BUTTON_WIDTH, BUTTON_HEIGHT);
-    this->buttons[5] = new Button(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * 1, BUTTONS_TOP_2, BUTTON_WIDTH, BUTTON_HEIGHT);
-    this->buttons[6] = new Button(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * 2, BUTTONS_TOP_2, BUTTON_WIDTH, BUTTON_HEIGHT);
-    this->buttons[7] = new Button(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * 3, BUTTONS_TOP_2, BUTTON_WIDTH, BUTTON_HEIGHT);
-
-    for (size_t i = 0; i < 8; i++)
-    {
+    const uint16_t* img[8] = {
+        image_btn_start,
+        image_btn_stop,
+        image_btn_pause,
+        image_btn_home,
+        image_btn_reset,
+        image_btn_spindle,
+        image_btn_settings,
+        image_btn_power,
+    };
+    for (int i = 0; i < 4; i++) {
+        buttons[i] = new Button(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * i, BUTTONS_TOP_1, BUTTON_WIDTH, BUTTON_HEIGHT, img[i]);
         addTouchZone(this->buttons[i]);
     }
+    for (int i = 4; i < 8; i++) {
+        buttons[i] = new Button(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * (i - 4), BUTTONS_TOP_2, BUTTON_WIDTH, BUTTON_HEIGHT, img[i]);
+        addTouchZone(this->buttons[i]);
+    }
+
+    eventManager.addListener(EventType::StateChanged, [this](int event, int param) {
+        this->axis[0].invalidate(Invalidation::Foreground);
+        this->axis[0].setSelected(state.isAxisSelected(Axis::X));
+        this->axis[1].invalidate(Invalidation::Foreground);
+        this->axis[1].setSelected(state.isAxisSelected(Axis::Y));
+        this->axis[2].invalidate(Invalidation::Foreground);
+        this->axis[2].setSelected(state.isAxisSelected(Axis::Z));
+    });
 }
 
-void MainPage::processTouchZone(TouchZone* zone)
-{
+void MainPage::processTouchZone(TouchZone* zone) {
     Serial.println("Touched main page zone");
 
-    // if (dynamic_cast<Button*>(zone) != nullptr) {
+    if (zone == this->buttons[7]) {
+        eventManager.queueEvent(EventType::PowerBtnPressed, 0);
+        // if (this->powerOffCallback) {
+        //     this->powerOffCallback(1);
+        // }
+    }
+
+    // if (static_cast<Button*>(zone) != nullptr) {
     //     Button* button = (Button*)zone;
+
     //     //button->toggle();
     // }
 
@@ -60,76 +80,14 @@ void MainPage::processTouchZone(TouchZone* zone)
     // }
 }
 
-// static uint16_t* image_btn1_()
-// {
-//     static uint8_t im = 0;
-//     switch (im++ % 3) {
-//     case 0:
-//         return (uint16_t*)image_btn1;
-//     case 1:
-//         return (uint16_t*)image_btn2;
-//     case 2:
-//         return (uint16_t*)image_btn3;
-//     }
-//     return 0;
-// }
-
-// void MainPage::drawAxis(Axis axis, int y, char axisName) {
-//     setFont(manolomono, 25);
-//     drawChar(tft, 15, y + AXIS_TEXT_OFFSET + 10, axisName);
-
-//     setFont(consolas, 44);
-//     drawFloatNumber(tft, 33, y + AXIS_TEXT_OFFSET, state.getPos(axis), "%08.2f");
-
-//     drawHLine(tft, y + AXIS_SPACING - 1, ILI9341_DARKGREY);
-// }
-
 void MainPage::drawButtons() {
-    // drawImage(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * 0, BUTTONS_TOP_1, image_btn1_(), &image_btn1_size);
-    // drawImage(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * 1, BUTTONS_TOP_1, image_btn1_(), &image_btn1_size);
-    // drawImage(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * 2, BUTTONS_TOP_1, image_btn1_(), &image_btn1_size);
-    // drawImage(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * 3, BUTTONS_TOP_1, image_btn1_(), &image_btn1_size);
-
-    // drawImage(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * 0, BUTTONS_TOP_2, image_btn1_(), &image_btn1_size);
-    // drawImage(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * 1, BUTTONS_TOP_2, image_btn1_(), &image_btn1_size);
-    // drawImage(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * 2, BUTTONS_TOP_2, image_btn1_(), &image_btn1_size);
-    // drawImage(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * 3, BUTTONS_TOP_2, image_btn1_(), &image_btn1_size);
-
-    this->buttons[0]->draw();
-    this->buttons[1]->draw();
-    this->buttons[2]->draw();
-    this->buttons[3]->draw();
-    this->buttons[4]->draw();
-    this->buttons[5]->draw();
-    this->buttons[6]->draw();
-    this->buttons[7]->draw();
+    for (int i = 0; i < 8; i++) {
+        this->buttons[i]->draw();
+    }
 }
 
 void MainPage::draw() {
     this->drawButtons();
-
-    // this->drawAxis(Axis::X, AXIS_X, 'X');
-    // this->drawAxis(Axis::Y, AXIS_Y, 'Y');
-    // this->drawAxis(Axis::Z, AXIS_Z, 'Z');
-
-    setFont(manolomono, 25);
-
-    // drawChar(tft, 10, AXIS_X + AXIS_TEXT_OFFSET + 11, 'X');
-    // drawChar(tft, 10, AXIS_Y + AXIS_TEXT_OFFSET + 11, 'Y');
-    // drawChar(tft, 10, AXIS_Z + AXIS_TEXT_OFFSET + 11, 'Z');
-
-    // setFont(consolas, 44);
-
-    // drawFloatNumber(tft, 30, AXIS_X + AXIS_TEXT_OFFSET, state.getPos(Axis::X), 8);
-    // drawFloatNumber(tft, 30, AXIS_Y + AXIS_TEXT_OFFSET, state.getPos(Axis::Y), 8);
-    // drawFloatNumber(tft, 30, AXIS_Z + AXIS_TEXT_OFFSET, state.getPos(Axis::Z), 8);
-
-    drawHLine(tft, AXIS_X - 1, ILI9341_DARKGREY);
-    // drawHLine(tft, AXIS_X + AXIS_SPACING - 1, ILI9341_DARKGREY);
-    // drawHLine(tft, AXIS_Y + AXIS_SPACING - 1, ILI9341_DARKGREY);
-    // drawHLine(tft, AXIS_Z + AXIS_SPACING - 1, ILI9341_DARKGREY);
-
-    drawHLine(tft, BUTTONS_TOP, ILI9341_DARKGREY);
 
     setFont(manolomono, 13);
     drawText(tft, 60, 180, "FEED", true);
@@ -146,38 +104,37 @@ void MainPage::draw() {
     this->axis[1].draw();
     this->axis[2].draw();
 
+    drawHLine(tft, AXIS_X - 1, ILI9341_DARKGREY);
+    drawHLine(tft, BUTTONS_TOP, ILI9341_DARKGREY);
+
     setFont(consolas, 12);
-    drawText(tft, 110, 5, "Jogging");
-    drawText(tft, 70, 5, "USB");
+    drawText(tft, 110, 7, "Jogging");
+    drawText(tft, 70, 7, "USB");
+}
+
+void MainPage::onPowerOff(Callback callback) {
+    this->powerOffCallback = callback;
 }
 
 AxisWidget::AxisWidget(Axis axis, int y, char axisName, Adafruit_ILI9341& tft)
-    : Drawable(tft, 0, y, 240, AXIS_SPACING), TouchZone(0, y, 240, AXIS_SPACING)
-{
+    : Drawable(tft, 0, y, 240, AXIS_SPACING)
+    , TouchZone(0, y, 240, AXIS_SPACING) {
     this->axis = axis;
     this->y = y;
     this->axisName = axisName;
 }
 
-void AxisWidget::draw()
-{
-    bool selected = state.isAxisSelected(axis);
-    if (this->selected != selected) {
-        this->selected = selected;
+void AxisWidget::draw_() {
+    if (invalidation == Invalidation::All) {
         fillRect(&tft, 0, y, 240, AXIS_SPACING, selected ? 0x051F : ILI9341_BLACK);
+        drawHLine(&tft, y + AXIS_SPACING - 1, ILI9341_DARKGREY);
     }
 
     drawText();
-    drawHLine(&tft, y + AXIS_SPACING - 1, ILI9341_DARKGREY);
 }
 
-void AxisWidget::drawText()
-{
-    setTextColor(
-        selected ? ILI9341_BLACK : ILI9341_WHITE,
-        selected ? 0x051F : ILI9341_BLACK,
-        true
-    );
+void AxisWidget::drawText() {
+    setTextColor(selected ? WHITE_ON_BLUE : WHITE_ON_BLACK, true);
 
     setFont(manolomono, 25);
     drawChar(&tft, 15, y + AXIS_TEXT_OFFSET + 10, axisName);
@@ -188,11 +145,18 @@ void AxisWidget::drawText()
     restoreTextColor();
 }
 
-bool AxisWidget::isTouched(int x, int y)
-{
+bool AxisWidget::isTouched(int x, int y) {
     if (TouchZone::isTouched(x, y)) {
         state.setSelectedAxis(axis);
+        state.triggerUpdatedEvent();
     }
 
     return false;
+}
+
+void AxisWidget::setSelected(bool selected) {
+    if (this->selected != selected) {
+        this->selected = selected;
+        this->invalidate(Invalidation::All);
+    }
 }

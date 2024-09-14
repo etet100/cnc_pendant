@@ -9,10 +9,14 @@ struct ImageSize {
 };
 
 #include "images/alive.h" // alive.png
-#include "images/btn1.h" // btn1.png
-#include "images/btn2.h" // btn2.png
-#include "images/btn3.h" // btn3.png
-#include "images/btn4.h" // btn4.png
+#include "images/btn_home.h" // btn_home.png
+#include "images/btn_pause.h" // btn_pause.png
+#include "images/btn_power.h" // btn_power.png
+#include "images/btn_reset.h" // btn_reset.png
+#include "images/btn_settings.h" // btn_settings.png
+#include "images/btn_spindle.h" // btn_spindle.png
+#include "images/btn_start.h" // btn_start.png
+#include "images/btn_stop.h" // btn_stop.png
 #include "images/wifi.h" // wifi.png
 #include "images/logo00.h" // logo00.png
 #include "images/logo01.h" // logo01.png

@@ -1,3 +1,4 @@
+#define MAIN
 #include <Arduino.h>
 #include <HardwareSerial.h>
 #include <Wire.h>
@@ -12,12 +13,14 @@
 #include "I2C_eeprom.h"
 #include "images.h"
 #include "drawing.h"
+#include "globals.h"
 
 #define SDA_PIN D3
 #define SCL_PIN D4
 #define I2C_CLOCK 400000
 #define LCD_BACKLIGHT_PIN 3
 
+EventManager eventManager;
 Touch touch(Wire);
 Screen screen(touch);
 WiFiCommmunicator wifiCommmunicator;
@@ -26,92 +29,9 @@ MainPage mainPage(screen.getTFT());
 Wheel wheel(Wire);
 PCA9536 pca9536d;
 Buttons buttons(pca9536d);
-
 I2C_eeprom ee(0x50, I2C_DEVICESIZE_24LC08);
 
-#define LOGO_PART_WIDTH 40
-#define LOGO_PART_HEIGHT 33
-#define LOGO_TOP 59
-
-void logo()
-{
-    const uint16_t* images[] = {
-        image_logo00,
-        0,
-        image_logo10,
-        image_logo01,
-        0,
-        image_logo20,
-        image_logo11,
-        image_logo02,
-        0,
-        image_logo30,
-        image_logo21,
-        image_logo12,
-        image_logo03,
-        0,
-        image_logo40,
-        image_logo31,
-        image_logo22,
-        image_logo13,
-        image_logo04,
-        0,
-        image_logo50,
-        image_logo41,
-        image_logo32,
-        image_logo23,
-        image_logo14,
-        image_logo05,
-        0,
-        image_logo51,
-        image_logo42,
-        image_logo33,
-        image_logo24,
-        image_logo15,
-        0,
-        image_logo52,
-        image_logo43,
-        image_logo34,
-        image_logo25,
-        0,
-        image_logo53,
-        image_logo44,
-        image_logo35,
-        0,
-        image_logo54,
-        image_logo45,
-        0,
-        image_logo55,
-        (uint16_t*)1
-    };
-
-    int x0 = 0, x = x0;
-    int y0 = LOGO_TOP, y = y0;
-
-    const uint16_t** image = images;
-    while (*image != (uint16_t*)1) {
-        if (*image == 0) {
-            delay(30);
-            image++;
-            if (x0 < 240 - LOGO_PART_WIDTH) {
-                x0 += LOGO_PART_WIDTH;
-            } else {
-                y0 += LOGO_PART_HEIGHT;
-            }
-            x = x0;
-            y = y0;
-            continue;
-        }
-
-        drawImage(&screen.getTFT(), x, y, *image, LOGO_PART_WIDTH, LOGO_PART_HEIGHT);
-        y += LOGO_PART_HEIGHT;
-        x -= LOGO_PART_WIDTH;
-
-        image++;
-    }
-
-    delay(1000);
-}
+void logo(Screen &screen);
 
 void setup()
 {
@@ -161,9 +81,26 @@ void setup()
 
     wifiCommmunicator.begin();
 
-    logo();
+    logo(screen);
+
     screen.setCurrentPage(&mainPage);
     screen.clear();
+
+    eventManager.addListener(EventType::PowerBtnPressed, [](int event, int param) {
+        Serial.println("Power off");
+        pca9536d.write(LCD_BACKLIGHT_PIN, HIGH);
+    });
+
+    // mainPage.onPowerOff([](int) {
+    //     Serial.println("Power off");
+    //     pca9536d.write(LCD_BACKLIGHT_PIN, HIGH);
+    // });
+    buttons.onWheelPressed([](int) {
+        Serial.println("Power on");
+        pca9536d.write(LCD_BACKLIGHT_PIN, LOW);
+    });
+
+    //ESP.deepSleep(0);
 
     buttons.begin();
 
@@ -193,13 +130,11 @@ void setupWatchdog()
 
 void loop()
 {
-    delay(10);
+    delay(15);
 
     static uint32_t lastTime = 0;
-    if (millis() - lastTime >= 25) {
+    if (millis() - lastTime >= 50) {
         wifiCommmunicator.loop();
-        WiFiCommmunicatorState wifiState = wifiCommmunicator.getState();
-        mainPage.wifiIndicator.setState(wifiState);
         screen.loop();
         buttons.loop();
         // if (buttons.isTopPressed()) {
@@ -221,4 +156,8 @@ void loop()
 
         lastTime = millis();
     }
+
+    eventManager.processAllEvents();
 }
+
+void setup();
