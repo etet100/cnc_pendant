@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "state.h"
 
-enum class CommunicationMode {
+enum class CommunicationMode: uint8_t {
     NONE = 0,
     SERIAL_,
     WIFI,
@@ -43,6 +43,7 @@ struct __attribute__ ((packed)) StateMessage
     float x;
     float y;
     float z;
+    uint8_t machineState;
     CommunicationMode mode;
     char selectedAxis;
     Footer footer;

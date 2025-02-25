@@ -1,5 +1,5 @@
-#ifndef WIFI_H_
-#define WIFI_H_
+#ifndef WIRELESSCOMMUNICATOR_H_
+#define WIRELESSCOMMUNICATOR_H_
 
 #include "communicator.h"
 #include <ESP8266WiFi.h>
@@ -15,11 +15,11 @@ enum WiFiCommmunicatorState {
     WIFI_CONNECTED_TO_SERVER,
 };
 
-class WiFiCommmunicator : public Communicator
+class WirelessCommmunicator : public Communicator
 {
     public:
-        WiFiCommmunicator();
-        ~WiFiCommmunicator();
+        WirelessCommmunicator();
+        ~WirelessCommmunicator();
         void begin() override;
         void loop() override;
         bool isConnected() override;
@@ -39,4 +39,4 @@ class WiFiCommmunicator : public Communicator
         void setCommState(WiFiCommmunicatorState state);
 };
 
-#endif // WIFI_H_
+#endif // WIRELESSCOMMUNICATOR_H_

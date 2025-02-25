@@ -4,7 +4,7 @@
 #include "globals.h"
 #include "basepage.h"
 #include "controls.h"
-#include "wifi.h"
+#include "wirelesscommunicator.h"
 #include "state.h"
 #include <Adafruit_ILI9341.h>
 
@@ -16,7 +16,7 @@ class AxisWidget : public Drawable, public TouchZone
         void setSelected(bool selected);
 
     protected:
-        void draw_() override;
+        void draw_(int y1, int y2) override;
 
     private:
         int y;
@@ -31,7 +31,6 @@ class MainPage : public BasePage {
         MainPage(Adafruit_ILI9341& tft);
         void draw() override;
         void onPowerOff(Callback callback);
-        WifiStateIndicator wifiIndicator;
 
     protected:
         void processTouchZone(TouchZone* zone) override;
@@ -41,6 +40,8 @@ class MainPage : public BasePage {
         Button* buttons[8];
         AxisWidget axis[3];
         AliveIndicator aliveIndicator;
+        WifiStateIndicator wifiIndicator;
+        MachineStateIndicator machineStateIndicator;
         Callback powerOffCallback;
 };
 

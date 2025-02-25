@@ -1,21 +1,21 @@
 #include "screen.h"
-#include <HardwareSerial.h>
-#include <Arduino.h>
-#include "drawing.h"
 #include "colors.h"
+#include "drawing.h"
+#include <Arduino.h>
+#include <HardwareSerial.h>
 
-#define ADAGFX_PIN_CS       D8    // Display chip select
-#define ADAGFX_PIN_DC       D2    // Display SPI data/command
-#define ADAGFX_PIN_RST      D1    // Display Reset
-#define SPI_FREQUENCY       30000000
+#define ADAGFX_PIN_CS D8 // Display chip select
+#define ADAGFX_PIN_DC D2 // Display SPI data/command
+#define ADAGFX_PIN_RST D1 // Display Reset
+#define SPI_FREQUENCY 30000000
 
-Screen::Screen(Touch &touch) : tft(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST), touch(touch)
-{
+Screen::Screen(Touch& touch)
+    : tft(ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_RST)
+    , touch(touch) {
     currentPage = nullptr;
 }
 
-void Screen::begin()
-{
+void Screen::begin() {
     Serial.println("Initializing screen...");
 
     tft.begin(SPI_FREQUENCY);
@@ -28,8 +28,7 @@ void Screen::begin()
     Serial.println(" Result: initialized");
 }
 
-void Screen::loop()
-{
+void Screen::loop() {
     touch.loop();
     if (currentPage == nullptr) {
         return;
@@ -46,12 +45,12 @@ void Screen::loop()
     currentPage->draw();
 }
 
-void Screen::clear()
-{
+void Screen::clear() {
     tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, ILI9341_BLACK);
 }
 
-void Screen::setCurrentPage(BasePage *page) { 
+void Screen::setCurrentPage(BasePage* page) {
     page->setTFT(&tft);
-    currentPage = page; 
+    currentPage = page;
 }
+

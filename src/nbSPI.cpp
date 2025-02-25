@@ -12,7 +12,9 @@
 
 #include <SPI.h>
 
-void nbSPI_writeChunk();
+#ifndef WIN32
+
+void nbSPIwriteChunk();
 void nbSPI_ISR();
 
 // Set an IO to measure timing
@@ -32,13 +34,13 @@ volatile uint16_t _nbspi_size = 0;
 volatile uint32_t * _nbspi_data;
 volatile boolean _nbspi_isbusy = false;
 
-IRAM_ATTR boolean nbSPI_isBusy() {
+IRAM_ATTR boolean nbSPIisBusy() {
     if(_nbspi_isbusy) return true; // true while not all data put into buffer
     return (SPI1CMD & SPIBUSY); // true while SPI sends data
 }
 
 // This will accept data of ary length to send via SPI
-IRAM_ATTR void nbSPI_writeBytes(uint8_t *data, uint16_t size) {
+IRAM_ATTR void nbSPIwriteBytes(uint8_t *data, uint16_t size) {
     NBSPI_TDBG_HIGH;
     _nbspi_isbusy = true;
     _nbspi_size = size;
@@ -47,12 +49,12 @@ IRAM_ATTR void nbSPI_writeBytes(uint8_t *data, uint16_t size) {
     SPI1S &= ~(0x1F); // Disable and clear all interrupts on SPI1
     ETS_SPI_INTR_ATTACH(nbSPI_ISR, NULL); // Set Interrupt handler
     ETS_SPI_INTR_ENABLE(); // Enable SPI Interrupts
-    nbSPI_writeChunk(); // Write first chunk of data
+    nbSPIwriteChunk(); // Write first chunk of data
     NBSPI_TDBG_LOW;
 }
 
 // This will send up to 64 bytes via SPI
-IRAM_ATTR void inline nbSPI_writeChunk() {
+IRAM_ATTR void inline nbSPIwriteChunk() {
     uint16_t size = _nbspi_size;
     if(size > 64) size = 64;
     _nbspi_size -= size;
@@ -92,7 +94,10 @@ IRAM_ATTR void nbSPI_ISR() {
     if(SPIIR & (1 << SPII1)) {
         // SPI1 Interrupt
         SPI1S &= ~(0x1F); // Disable and clear all interrupts on SPI1
-        nbSPI_writeChunk(); // Write remaining data
+        nbSPIwriteChunk(); // Write remaining data
     }
     NBSPI_TDBG_LOW;
 }
+
+#endif // WIN32
+

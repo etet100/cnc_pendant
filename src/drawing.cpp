@@ -13,8 +13,8 @@ static uint16_t prevColor[4];
 
 inline static void writeAndWait(uint16_t* buf, uint16_t bytes)
 {
-    nbSPI_writeBytes((uint8_t*)buf, bytes);
-    while (nbSPI_isBusy()) {
+    nbSPIwriteBytes((uint8_t*)buf, bytes);
+    while (nbSPIisBusy()) {
         delayMicroseconds(2);
     };
 }
@@ -134,15 +134,21 @@ size_t drawChar(
     if (width == 0 || height == 0 || width > 100 || height > 100) {
         return 0;
     }
-    uint16_t decoded_size = width * height * 2;
+    uint16_t decoded_size = width * height * sizeof(uint16_t);
+    assert(decoded_size > 0);
     uint16_t *buf = (uint16_t*)malloc(decoded_size);
+    assert(buf != nullptr);
     uint16_t *pos = buf;
-    char font_byte = pgm_read_byte(font_data_++);
+    uint8_t font_byte = pgm_read_byte(font_data_++);
+    // uint8_t font_byte_org = font_byte;
+    // qDebug() << "Char: " << font_byte_org;
+
     while (font_byte) {
         uint8_t font_byte_color = font_byte & 0b11;
-        font_byte >>= 2;
+        font_byte >>= 2; // = number of pixels
         while (font_byte--) {
             *pos++ = color[font_byte_color];
+            assert(pos - buf <= width * height);
         }
         font_byte = pgm_read_byte(font_data_++);
     }
@@ -150,6 +156,7 @@ size_t drawChar(
     tft->setAddrWindow(x, y, width, height);
     writeAndWait(buf, decoded_size);
     tft->endWrite();
+    assert(buf != nullptr);
     free(buf);
 
     return width;

@@ -12,6 +12,10 @@ Axis State::getSelectedAxis() {
     return selectedAxis;
 }
 
+uint8_t State::getMachineState() {
+    return machineState;
+}
+
 bool State::isAxisSelected(Axis axis) {
     return selectedAxis == axis;
 }
@@ -37,6 +41,10 @@ void State::fillStateMessage(StateMessage &msg) {
     msg.z = pos[(int) Axis::Z];
     msg.selectedAxis = (uint8_t) selectedAxis;
     msg.mode = mode;
+}
+
+void State::setMachineState(uint8_t state) {
+    this->machineState = state;
 }
 
 State state;

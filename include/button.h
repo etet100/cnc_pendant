@@ -10,7 +10,7 @@ class Button : public TouchZone, public Drawable {
         bool isTouched(int x, int y) override;
 
     protected:
-        void draw_() override;
+        void draw_(int y1, int y2) override;
 
     private:
         const uint16_t* image;

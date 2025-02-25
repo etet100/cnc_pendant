@@ -1,6 +1,6 @@
-#include "wifi.h"
+#include "wirelesscommunicator.h"
 #include "ESPAsyncTCP.h"
-#include <Arduino.h>
+#include "Arduino.h"
 #include "../config.h"
 #include "state.h"
 #include "circularbuffer.h"
@@ -9,7 +9,7 @@
 const char *ssid = WIFI_SSID;
 const char *password = WIFI_PASSWORD;
 
-WiFiCommmunicator::WiFiCommmunicator() : commState(WIFI_DISCONNECTED)
+WirelessCommmunicator::WirelessCommmunicator() : commState(WIFI_DISCONNECTED)
 {
     client.onData([this](void* arg, AsyncClient* client, void *data, size_t len) {
         static uint8_t packetType = 255;
@@ -47,7 +47,7 @@ WiFiCommmunicator::WiFiCommmunicator() : commState(WIFI_DISCONNECTED)
                         buffer.get((uint8_t*)&msg, packetSize);
                         //Serial.printf("CRC: %d %d %d\n", msg.footer.crc, calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer)), packetSize);
                         if (msg.footer.crc != calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer))) {
-                            Serial.println("State CRC error");
+                            Serial.printf("State CRC: %d != %d, %d", msg.footer.crc, calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer)), packetSize);
                             break;
                         }
                         //Serial.printf("State: %6.2f %6.2f %6.2f %d\n", msg.x, msg.y, msg.z, (int)msg.mode);
@@ -55,6 +55,7 @@ WiFiCommmunicator::WiFiCommmunicator() : commState(WIFI_DISCONNECTED)
                         state.setPos(Axis::X, msg.x);
                         state.setPos(Axis::Y, msg.y);
                         state.setPos(Axis::Z, msg.z);
+                        state.setMachineState(msg.machineState);
                         state.triggerUpdatedEvent();
 
                         this->updateLastMessageTime();
@@ -110,18 +111,18 @@ WiFiCommmunicator::WiFiCommmunicator() : commState(WIFI_DISCONNECTED)
     });
 }
 
-WiFiCommmunicator::~WiFiCommmunicator()
+WirelessCommmunicator::~WirelessCommmunicator()
 {
     WiFi.onStationModeGotIP(nullptr);
     WiFi.onStationModeConnected(nullptr);
 }
 
-bool WiFiCommmunicator::isConnected()
+bool WirelessCommmunicator::isConnected()
 {
     return this->commState == WIFI_CONNECTED_TO_SERVER;
 }
 
-void WiFiCommmunicator::begin()
+void WirelessCommmunicator::begin()
 {
     Serial.println("Initializing WiFi...");
 
@@ -145,30 +146,30 @@ void WiFiCommmunicator::begin()
     Serial.println(" Result: initialized");
 }
 
-void WiFiCommmunicator::connect()
+void WirelessCommmunicator::connect()
 {
     Serial.println("Connecting to server...");
     this->client.connect("192.168.1.2", 5555);
     this->setCommState(WIFI_CONNECTING_TO_SERVER);
 }
 
-void WiFiCommmunicator::disconnect()
+void WirelessCommmunicator::disconnect()
 {
     this->client.close();
     this->setCommState(WIFI_IP);
 }
 
-void WiFiCommmunicator::updateLastMessageTime()
+void WirelessCommmunicator::updateLastMessageTime()
 {
     this->lastMessageTime = millis();
 }
 
-void WiFiCommmunicator::setCommState(WiFiCommmunicatorState state) {
+void WirelessCommmunicator::setCommState(WiFiCommmunicatorState state) {
     this->commState = state;
     eventManager.queueEvent(EventType::WiFiStateChanged, (int)state);
 }
 
-void WiFiCommmunicator::loop()
+void WirelessCommmunicator::loop()
 {
     if (this->commState == WIFI_IP) {
         this->connect();
@@ -182,11 +183,13 @@ void WiFiCommmunicator::loop()
         {
             Serial.println("Wifi timeout. Disconnecting...");
             this->disconnect();
+
+            lastTime = millis();
         }
     }
 }
 
-void WiFiCommmunicator::scanNetworks()
+void WirelessCommmunicator::scanNetworks()
 {
     String ssid;
     int32_t rssi;

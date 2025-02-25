@@ -10,3 +10,5 @@ pcb/main_nodemcu/main-backups
 pcb/main_v2/main_v2-backups
 pcb/main_v2/main-backups
 pcb/**/_autosave*
+/.qtc_clangd
+/build

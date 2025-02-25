@@ -12,7 +12,9 @@
 #ifndef NBSPI_H_
 #define NBSPI_H_
 
-void nbSPI_writeBytes(uint8_t *data, uint16_t size);
-boolean nbSPI_isBusy();
+#include <Arduino.h>
+
+void nbSPIwriteBytes(uint8_t *data, uint16_t size);
+boolean nbSPIisBusy();
 
 #endif // NBSPI_H_

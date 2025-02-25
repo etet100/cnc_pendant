@@ -20,9 +20,10 @@
 
 MainPage::MainPage(Adafruit_ILI9341& tft)
     : BasePage()
-    , wifiIndicator(tft, 10, 3)
     , axis { AxisWidget(Axis::X, AXIS_X, 'X', tft), AxisWidget(Axis::Y, AXIS_Y, 'Y', tft), AxisWidget(Axis::Z, AXIS_Z, 'Z', tft) }
     , aliveIndicator(tft, 213, 3)
+    , wifiIndicator(tft, 10, 3)
+    , machineStateIndicator(tft, 110, 3)
 {
     for (int i = 0; i < 3; i++) {
         addTouchZone(&axis[i]);
@@ -82,7 +83,7 @@ void MainPage::processTouchZone(TouchZone* zone) {
 
 void MainPage::drawButtons() {
     for (int i = 0; i < 8; i++) {
-        this->buttons[i]->draw();
+        this->buttons[i]->draw(240, 300); // todo
     }
 }
 
@@ -97,18 +98,17 @@ void MainPage::draw() {
     drawIntNumber(tft, 60, 199, 123, "%05d", true);
     drawFloatNumber(tft, 180, 199, 123.45, "%5.2f", true);
 
-    this->wifiIndicator.draw();
-    this->aliveIndicator.draw();
+    this->wifiIndicator.draw(0, 319); // todo
+    this->aliveIndicator.draw(0, 319);
+    this->machineStateIndicator.draw(0, 319);
 
-    this->axis[0].draw();
-    this->axis[1].draw();
-    this->axis[2].draw();
+    this->axis[0].draw(0, 319);
+    this->axis[1].draw(0, 319);
+    this->axis[2].draw(0, 319);
 
     drawHLine(tft, AXIS_X - 1, ILI9341_DARKGREY);
     drawHLine(tft, BUTTONS_TOP, ILI9341_DARKGREY);
 
-    setFont(consolas, 12);
-    drawText(tft, 110, 7, "Jogging");
     drawText(tft, 70, 7, "USB");
 }
 
@@ -124,7 +124,7 @@ AxisWidget::AxisWidget(Axis axis, int y, char axisName, Adafruit_ILI9341& tft)
     this->axisName = axisName;
 }
 
-void AxisWidget::draw_() {
+void AxisWidget::draw_(int y1, int y2) {
     if (invalidation == Invalidation::All) {
         fillRect(&tft, 0, y, 240, AXIS_SPACING, selected ? 0x051F : ILI9341_BLACK);
         drawHLine(&tft, y + AXIS_SPACING - 1, ILI9341_DARKGREY);

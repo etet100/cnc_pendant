@@ -2,7 +2,6 @@ import os, glob
 import hashlib
 import pkg_resources
 from pathlib import Path
-from PIL import Image, ImageFont, ImageDraw
 
 Import("env")
 installed = {pkg.key for pkg in pkg_resources.working_set}
@@ -12,6 +11,12 @@ if 'html2image' in installed:
 else:
     env.Execute("$PYTHONEXE -m pip install html2image")
 
+if 'Pillow' in installed:
+    pass
+else:
+    env.Execute("$PYTHONEXE -m pip install Pillow")
+
+from PIL import Image, ImageFont, ImageDraw
 from html2image import Html2Image
 
 def rgb888tobgr565(red, green, blue):
@@ -240,8 +245,12 @@ print("--------------------------------")
 print("Generating fonts images")
 #generate_font("fonts/7seg.ttf", 40) # DSEG7Classic-Bold.ttf
 file = open("include\\fonts\\font.h", "w")
+file.write("#ifndef H_FONT\n")
+file.write("#define H_FONT\n")
+file.write("#pragma once\n")
 file.write("#include \"Arduino.h\"\n")
-file.close();
+file.close()
+
 # generate_font("fonts/7seg.ttf", 32, ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "-", ",")) # DSEG7Classic-Bold.ttf
 # generate_font("fonts/manolomono.otf", 13, ("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l",
 # generate_font("fonts/manolomono.otf", 25, ("X", "Y", "Z"))
@@ -253,7 +262,11 @@ generate_font("fonts/manolomono.otf", 25, "XYZ")
 generate_font("fonts/consolas.ttf", 12, "abcdefghijklmonpqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ")
 generate_font("fonts/consolas.ttf", 32, "0123456789.-", 4)
 generate_font("fonts/consolas.ttf", 44, "0123456789.-", 4)
-# generate_font("fonts/manolomono.otf", 32, "0123456789.-")
+
+file = open("include\\fonts\\font.h", "a")
+file.write("#endif\n")
+file.close()
+
 print("--------------------------------")
 
 print("Converting HTML to images...")

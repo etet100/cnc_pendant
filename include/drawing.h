@@ -1,5 +1,6 @@
 #include <Adafruit_ILI9341.h>
 #include "images.h"
+#include "fonts/font.h"
 
 #define BYTE_SWAP(x) (((x >> 8) & 0x00FF) | ((x << 8) & 0xFF00))
 

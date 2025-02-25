@@ -1,20 +1,16 @@
 #include "serial.h"
 
-SerialCommunicator::SerialCommunicator()
-{
+SerialCommunicator::SerialCommunicator() {
 }
 
-bool SerialCommunicator::isConnected()
-{
+bool SerialCommunicator::isConnected() {
     return true;
 }
 
-void SerialCommunicator::begin()
-{
+void SerialCommunicator::begin() {
 }
 
-void SerialCommunicator::loop()
-{
+void SerialCommunicator::loop() {
     // if (Serial.available()) {
     //     Serial.write(Serial.read());
     // }

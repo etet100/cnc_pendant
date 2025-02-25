@@ -15,6 +15,7 @@ public:
     void loop();
     void clear();
     void setCurrentPage(BasePage *page);
+    void setBrightness(uint8_t brightness);
     Adafruit_ILI9341 &getTFT() { return tft; }
 
 private:

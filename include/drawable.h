@@ -12,7 +12,7 @@ enum class Invalidation {
 class Drawable {
 public:
     Drawable(Adafruit_ILI9341 &tft, int x, int y, int width, int height);
-    virtual void draw();
+    virtual void draw(int y1, int y2);
     void invalidate(Invalidation mode = Invalidation::All);
 protected:
     Adafruit_ILI9341 &tft;
@@ -20,8 +20,9 @@ protected:
     int y;
     int width;
     int height;
+    uint16_t visibilityMap[6] = {0, 0, 0, 0, 0, 0};
     Invalidation invalidation = Invalidation::All;
-    virtual void draw_() {};
+    virtual void draw_(int y1, int y2) {};
 };
 
 #endif // DRAWABLE_H_
