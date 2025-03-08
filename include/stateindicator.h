@@ -8,17 +8,17 @@
 class StateIndicator : public Drawable
 {
     public:
-        StateIndicator(Adafruit_ILI9341& tft, int x, int y, int width, int height);
-        StateIndicator(Adafruit_ILI9341& tft, int x, int y, ImageSize& imageSize);
+        StateIndicator(Screen& tft, int x, int y, int width, int height);
+        StateIndicator(Screen& tft, int x, int y, ImageSize& imageSize);
 };
 
 class WifiStateIndicator : public StateIndicator
 {
     public:
-        WifiStateIndicator(Adafruit_ILI9341& tft, int x, int y);
+        WifiStateIndicator(Screen& tft, int x, int y);
 
     protected:
-        void draw_(int y1, int y2) override;
+        void draw_() override;
 
     private:
         ImageSize imageSize;
@@ -28,16 +28,16 @@ class WifiStateIndicator : public StateIndicator
 class AliveIndicator : public StateIndicator
 {
     public:
-        AliveIndicator(Adafruit_ILI9341& tft, int x, int y)
+        AliveIndicator(Screen& tft, int x, int y)
             : StateIndicator(tft, x, y, 16, 17) { }
-        void draw(int y1, int y2) override;
+        void draw() override;
 };
 
 class MachineStateIndicator : public StateIndicator
 {
     public:
-        MachineStateIndicator(Adafruit_ILI9341& tft, int x, int y);
-        void draw(int y1, int y2) override;
+        MachineStateIndicator(Screen& tft, int x, int y);
+        void draw() override;
 };
 
 #endif // STATEINDICATOR_H

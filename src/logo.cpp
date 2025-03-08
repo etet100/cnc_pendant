@@ -7,7 +7,7 @@
 #define LOGO_PART_HEIGHT 33
 #define LOGO_TOP 59
 
-void logo(Screen &screen)
+void logo(Screen &tft)
 {
     const uint16_t* images[] = {
         image_logo00,
@@ -77,7 +77,7 @@ void logo(Screen &screen)
             continue;
         }
 
-        drawImage(&screen.getTFT(), x, y, *image, LOGO_PART_WIDTH, LOGO_PART_HEIGHT);
+        tft.drawImage(x, y, *image, LOGO_PART_WIDTH, LOGO_PART_HEIGHT);
         y += LOGO_PART_HEIGHT;
         x -= LOGO_PART_WIDTH;
 

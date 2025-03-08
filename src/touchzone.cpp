@@ -1,10 +1,8 @@
 #include "touchzone.h"
 
-TouchZone::TouchZone(int x, int y, int width, int height): x1(x), y1(y), x2(x + width), y2(y + height)
-{
+TouchZone::TouchZone(uint16_t x, uint16_t y, uint16_t width, uint16_t height): tzx1(x), tzy1(y), tzx2(x + width), tzy2(y + height) {
 }
 
-bool TouchZone::isTouched(int x, int y)
-{
-    return x >= this->x1 && x <= this->x2 && y >= this->y1 && y <= this->y2;
+bool TouchZone::isTouched(uint16_t x, uint16_t y) {
+    return x >= this->tzx1 && x <= this->tzx2 && y >= this->tzy1 && y <= this->tzy2;
 }

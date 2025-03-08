@@ -9,8 +9,7 @@
 const char *ssid = WIFI_SSID;
 const char *password = WIFI_PASSWORD;
 
-WirelessCommmunicator::WirelessCommmunicator() : commState(WIFI_DISCONNECTED)
-{
+WirelessCommmunicator::WirelessCommmunicator() : commState(WIFI_DISCONNECTED) {
     client.onData([this](void* arg, AsyncClient* client, void *data, size_t len) {
         static uint8_t packetType = 255;
         static uint8_t packetSize;
@@ -111,19 +110,16 @@ WirelessCommmunicator::WirelessCommmunicator() : commState(WIFI_DISCONNECTED)
     });
 }
 
-WirelessCommmunicator::~WirelessCommmunicator()
-{
+WirelessCommmunicator::~WirelessCommmunicator() {
     WiFi.onStationModeGotIP(nullptr);
     WiFi.onStationModeConnected(nullptr);
 }
 
-bool WirelessCommmunicator::isConnected()
-{
+bool WirelessCommmunicator::isConnected() {
     return this->commState == WIFI_CONNECTED_TO_SERVER;
 }
 
-void WirelessCommmunicator::begin()
-{
+void WirelessCommmunicator::begin() {
     Serial.println("Initializing WiFi...");
 
     WiFi.mode(WIFI_STA);
@@ -146,21 +142,18 @@ void WirelessCommmunicator::begin()
     Serial.println(" Result: initialized");
 }
 
-void WirelessCommmunicator::connect()
-{
+void WirelessCommmunicator::connect() {
     Serial.println("Connecting to server...");
     this->client.connect("192.168.1.2", 5555);
     this->setCommState(WIFI_CONNECTING_TO_SERVER);
 }
 
-void WirelessCommmunicator::disconnect()
-{
+void WirelessCommmunicator::disconnect() {
     this->client.close();
     this->setCommState(WIFI_IP);
 }
 
-void WirelessCommmunicator::updateLastMessageTime()
-{
+void WirelessCommmunicator::updateLastMessageTime() {
     this->lastMessageTime = millis();
 }
 
@@ -169,8 +162,7 @@ void WirelessCommmunicator::setCommState(WiFiCommmunicatorState state) {
     eventManager.queueEvent(EventType::WiFiStateChanged, (int)state);
 }
 
-void WirelessCommmunicator::loop()
-{
+void WirelessCommmunicator::loop() {
     if (this->commState == WIFI_IP) {
         this->connect();
     }
@@ -189,8 +181,7 @@ void WirelessCommmunicator::loop()
     }
 }
 
-void WirelessCommmunicator::scanNetworks()
-{
+void WirelessCommmunicator::scanNetworks() {
     String ssid;
     int32_t rssi;
     uint8_t encryptionType;

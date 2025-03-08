@@ -9,6 +9,7 @@
 #include <Arduino.h>
 #include <HardwareSerial.h>
 #include <Wire.h>
+#include "app.h"
 #include "screen.h"
 #include "wirelesscommunicator.h"
 #include "serial.h"
@@ -29,10 +30,11 @@
 
 EventManager eventManager;
 Touch touch(Wire);
-Screen screen(touch);
+App app(touch);
+Screen screen;
 WirelessCommmunicator wirelessCommmunicator;
 SerialCommunicator serialCommunicator;
-MainPage mainPage(screen.getTFT());
+MainPage mainPage(screen);
 Wheel wheel(Wire);
 PCA9536 pca9536d;
 Buttons buttons(pca9536d);
@@ -86,7 +88,7 @@ void setup()
     touch.begin();
     screen.begin();
 
-    screen.loop();
+    app.loop(buttons);
     pca9536d.write(LCD_BACKLIGHT_PIN, LOW);
 
     wirelessCommmunicator.begin();
@@ -95,8 +97,7 @@ void setup()
     logo(screen);
     #endif
 
-    screen.setCurrentPage(&mainPage);
-    screen.clear();
+    app.setCurrentPage(&mainPage);
 
     eventManager.addListener(EventType::PowerBtnPressed, [](int event, int param) {
         Serial.println("Power off");
@@ -148,9 +149,14 @@ void loop()
 
     static uint32_t lastTime = 0;
     if (millis() - lastTime >= 25) {
+        state.setPos(Axis::X, (rand() % 500000) / 100.0);
+        state.setPos(Axis::Y, (rand() % 500000) / 100.0);
+        state.setPos(Axis::Z, (rand() % 500000) / 100.0);
+        state.triggerUpdatedEvent();
+
         wirelessCommmunicator.loop();
-        screen.loop();
         buttons.loop();
+        app.loop(buttons);
         if (buttons.isTopPressed()) {
             Serial.println("Top button");
             //state.setPos(Z, 1);

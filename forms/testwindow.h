@@ -19,6 +19,7 @@ class TestWindow : public QMainWindow
         bool topPressed();
         bool bottomPressed();
         bool wheelPressed();
+        void limits(uint16_t limits[]);
 
     signals:
         void resetClicked();

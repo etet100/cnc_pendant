@@ -8,6 +8,10 @@ I2C EEPROM for settings storage
 ![s1](docs/images/screenshot_1.png)
 ![s1](docs/images/screenshot_2.png)
 
+Windows simulator/debugger
+
+
+
 TCP Testing software:
 Hercules
 TcpTerminal

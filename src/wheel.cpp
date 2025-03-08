@@ -5,19 +5,16 @@
 #define WHEEL_POSITION 0
 #define WHEEL_HISTERESIS (WHEEL_STEP * 0.7)
 
-Wheel::Wheel(TwoWire& wire): wire(wire), as5600(&wire), position(WHEEL_POSITION)
-{
+Wheel::Wheel(TwoWire& wire): wire(wire), as5600(&wire), position(WHEEL_POSITION) {
     updateThresholds(0);
 }
 
-void Wheel::updateThresholds(float position)
-{
+void Wheel::updateThresholds(float position) {
     this->thresholdTop = position + WHEEL_HISTERESIS;
     this->thresholdBottom = position - WHEEL_HISTERESIS;
 }
 
-void Wheel::begin()
-{
+void Wheel::begin() {
     Serial.println("Initializing wheel...");
 
     as5600.begin();
@@ -43,8 +40,7 @@ void Wheel::begin()
     }
 }
 
-void Wheel::debug()
-{
+void Wheel::debug() {
     Serial.print(this->position, DEC);
     Serial.print(" ");
     Serial.print(this->thresholdBottom, DEC);
@@ -52,8 +48,7 @@ void Wheel::debug()
     Serial.println(this->thresholdTop, DEC);
 }
 
-void Wheel::loop()
-{
+void Wheel::loop() {
     int32_t basePos = as5600.getCumulativePosition() - WHEEL_OFFSET;
 
     // do more than one step at a time

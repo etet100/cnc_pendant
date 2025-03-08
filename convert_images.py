@@ -142,7 +142,7 @@ def generate_character(char, font, width, height, top_offset, file, font_name, f
     # add 2 for width and height
     return len(list) + 2
 
-def generate_font(font_path, font_size, chars, top_offset = 0):
+def generate_font(font_path, font_size, chars, top_offset = 0, bottom_offset = 0):
     font_name = Path(font_path).stem
     print("Generating font: %s (%d px)" % (font_name, font_size))
 
@@ -171,11 +171,14 @@ def generate_font(font_path, font_size, chars, top_offset = 0):
 
     # chars = ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "-", "X", "Y", "Z")
     # height = int(font.getbbox("0")[3])
+    chars_with_bottom_offset = ("q", "p", "g", "y", "j")
     height = font.getmetrics()[0] - top_offset
     print(font.getmetrics())
     for char in chars:
         byte = bytes(char, encoding="ascii")[0]
         map[byte] = map_pos
+        if (char in chars_with_bottom_offset):
+            height += bottom_offset
         map_pos += generate_character(char, font, int(font.getlength(char)), height, top_offset, file, font_name, font_size)
         # print(font.getlength(char))
         # # text = "0123456789."
@@ -258,8 +261,11 @@ file.close()
 # generate_font("fonts/manolomono.otf", 32, ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "."))
 generate_font("fonts/manolomono.otf", 13, "abcdefghijklmonpqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ")
 generate_font("fonts/manolomono.otf", 15, "abcdefghijklmonpqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.:- ")
+generate_font("fonts/manolomono.otf", 19, "0123456789.- ")
+generate_font("fonts/manolomono.otf", 23, "abcdefghijklmonpqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ", 0, 5)
 generate_font("fonts/manolomono.otf", 25, "XYZ")
 generate_font("fonts/consolas.ttf", 12, "abcdefghijklmonpqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ")
+generate_font("fonts/consolas.ttf", 20, "abcdefghijklmonpqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ")
 generate_font("fonts/consolas.ttf", 32, "0123456789.-", 4)
 generate_font("fonts/consolas.ttf", 44, "0123456789.-", 4)
 
@@ -320,5 +326,11 @@ generate_colors(
         # text color, background color, name
         (0xFFFF, 0x0000, "white_on_black"),
         (0xFFFF, 0x051F, "white_on_blue"),
+        (0xFFFF, 0xfd20, "white_on_orange"),
+        (0xFFFF, 0xc618, "white_on_lightgray"),
+        (0xFFFF, 0x7bef, "white_on_darkgray"),
+        (0xFFFF, 0x39E7, "white_on_darkergray"),
+        (0x0000, 0x7bef, "black_on_darkgray"),
+        (0x0000, 0xfd20, "black_on_orange"),
     )
 )

@@ -1,9 +1,8 @@
-#include <Adafruit_ILI9341.h>
+#include "screen.h"
 #include "mainpage.h"
 #include "images.h"
 #include "drawing.h"
 #include "fonts/font.h"
-#include "colors.h"
 
 #define BUTTON_HEIGHT 40
 #define BUTTON_WIDTH 53
@@ -18,12 +17,12 @@
 #define AXIS_Y (AXIS_X + AXIS_SPACING)
 #define AXIS_Z (AXIS_Y + AXIS_SPACING)
 
-MainPage::MainPage(Adafruit_ILI9341& tft)
-    : BasePage()
+MainPage::MainPage(Screen& tft)
+    : BasePage(tft, 0, 320)
     , axis { AxisWidget(Axis::X, AXIS_X, 'X', tft), AxisWidget(Axis::Y, AXIS_Y, 'Y', tft), AxisWidget(Axis::Z, AXIS_Z, 'Z', tft) }
     , aliveIndicator(tft, 213, 3)
     , wifiIndicator(tft, 10, 3)
-    , machineStateIndicator(tft, 110, 3)
+    , machineStateIndicator(tft, 110, 7)
 {
     for (int i = 0; i < 3; i++) {
         addTouchZone(&axis[i]);
@@ -40,11 +39,11 @@ MainPage::MainPage(Adafruit_ILI9341& tft)
         image_btn_power,
     };
     for (int i = 0; i < 4; i++) {
-        buttons[i] = new Button(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * i, BUTTONS_TOP_1, BUTTON_WIDTH, BUTTON_HEIGHT, img[i]);
+        buttons[i] = new ImgButton(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * i, BUTTONS_TOP_1, BUTTON_WIDTH, BUTTON_HEIGHT, img[i]);
         addTouchZone(this->buttons[i]);
     }
     for (int i = 4; i < 8; i++) {
-        buttons[i] = new Button(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * (i - 4), BUTTONS_TOP_2, BUTTON_WIDTH, BUTTON_HEIGHT, img[i]);
+        buttons[i] = new ImgButton(tft, BUTTON_MARGIN + (BUTTON_WIDTH + BUTTON_MARGIN) * (i - 4), BUTTONS_TOP_2, BUTTON_WIDTH, BUTTON_HEIGHT, img[i]);
         addTouchZone(this->buttons[i]);
     }
 
@@ -83,40 +82,98 @@ void MainPage::processTouchZone(TouchZone* zone) {
 
 void MainPage::drawButtons() {
     for (int i = 0; i < 8; i++) {
-        this->buttons[i]->draw(240, 300); // todo
+        this->buttons[i]->draw();
     }
 }
 
-void MainPage::draw() {
+void MainPage::draw_() {
+    if (invalidation == Invalidation::All) {
+        tft.fillScreen(ILI9341_BLACK);
+    }
+
+    if (popup1) {
+        tft.setLimits(0, 50, 319 - 50, 319);
+    } else {
+        tft.resetLimits();
+    }
+
     this->drawButtons();
 
-    setFont(manolomono, 13);
-    drawText(tft, 60, 180, "FEED", true);
-    drawText(tft, 180, 180, "STEP MM", true);
+    tft.setFont(FT(manolomono, 13));
+    tft.drawText(60, 180, "FEED", true);
+    tft.drawText(180, 180, "STEP MM", true);
 
-    setFont(consolas, 32);
-    drawIntNumber(tft, 60, 199, 123, "%05d", true);
-    drawFloatNumber(tft, 180, 199, 123.45, "%5.2f", true);
+    tft.setFont(FT(consolas, 32));
+    tft.drawIntNumber(60, 199, 123, "%05d", true);
+    tft.drawFloatNumber(180, 199, 123.45, "%5.2f", true);
 
-    this->wifiIndicator.draw(0, 319); // todo
-    this->aliveIndicator.draw(0, 319);
-    this->machineStateIndicator.draw(0, 319);
+    this->wifiIndicator.draw();
+    this->aliveIndicator.draw();
+    this->machineStateIndicator.draw();
 
-    this->axis[0].draw(0, 319);
-    this->axis[1].draw(0, 319);
-    this->axis[2].draw(0, 319);
+    this->axis[0].draw();
+    this->axis[1].draw();
+    this->axis[2].draw();
 
-    drawHLine(tft, AXIS_X - 1, ILI9341_DARKGREY);
-    drawHLine(tft, BUTTONS_TOP, ILI9341_DARKGREY);
+    tft.drawFastHLine(0, AXIS_X - 1, SCREEN_WIDTH, ILI9341_DARKGREY);
+    tft.drawFastHLine(0, BUTTONS_TOP, SCREEN_WIDTH, ILI9341_DARKGREY);
 
-    drawText(tft, 70, 7, "USB");
+    tft.setFont(FT(consolas, 12));
+    tft.drawText(70, 7, "USB");
+
+    tft.resetLimits();
+
+    if (popup1) {
+        popup1->draw();
+    }
 }
 
 void MainPage::onPowerOff(Callback callback) {
     this->powerOffCallback = callback;
 }
 
-AxisWidget::AxisWidget(Axis axis, int y, char axisName, Adafruit_ILI9341& tft)
+void MainPage::processTouch(uint16_t x, uint16_t y)
+{
+    if (popup1) {
+        popup1->processTouch(x, y);
+    } else {
+        BasePage::processTouch(x, y);
+    }
+}
+
+void MainPage::processButtons(Buttons &buttons)
+{
+    if (buttons.isTopPressed()) {
+        if (!popup1) {
+            popup1 = new Popup1(tft);
+        }
+    } else {
+        if (popup1) {
+            delete popup1;
+            popup1 = nullptr;
+            invalidate();
+        }
+    }
+}
+
+void MainPage::invalidate(Invalidation mode)
+{
+    BasePage::invalidate(mode);
+    for (int i = 0; i < 3; i++) {
+        axis[i].invalidate(mode);
+    }
+    for (int i = 0; i < 8; i++) {
+        buttons[i]->invalidate(mode);
+    }
+}
+
+void MainPage::draw()
+{
+    draw_();
+    invalidation = Invalidation::None;
+}
+
+AxisWidget::AxisWidget(Axis axis, uint16_t y, char axisName, Screen& tft)
     : Drawable(tft, 0, y, 240, AXIS_SPACING)
     , TouchZone(0, y, 240, AXIS_SPACING) {
     this->axis = axis;
@@ -124,28 +181,28 @@ AxisWidget::AxisWidget(Axis axis, int y, char axisName, Adafruit_ILI9341& tft)
     this->axisName = axisName;
 }
 
-void AxisWidget::draw_(int y1, int y2) {
+void AxisWidget::draw_() {
     if (invalidation == Invalidation::All) {
-        fillRect(&tft, 0, y, 240, AXIS_SPACING, selected ? 0x051F : ILI9341_BLACK);
-        drawHLine(&tft, y + AXIS_SPACING - 1, ILI9341_DARKGREY);
+        tft.fillRect(0, y, 240, AXIS_SPACING, selected ? 0x051F : ILI9341_BLACK);
+        tft.drawFastHLine(0, y + AXIS_SPACING - 1, SCREEN_WIDTH, ILI9341_DARKGREY);
     }
 
     drawText();
 }
 
 void AxisWidget::drawText() {
-    setTextColor(selected ? WHITE_ON_BLUE : WHITE_ON_BLACK, true);
+    tft.setTextPalette(selected ? WHITE_ON_BLUE : WHITE_ON_BLACK, true);
 
-    setFont(manolomono, 25);
-    drawChar(&tft, 15, y + AXIS_TEXT_OFFSET + 10, axisName);
+    tft.setFont(FT(manolomono, 25));
+    tft.drawChar(15, y + AXIS_TEXT_OFFSET + 10, axisName);
 
-    setFont(consolas, 44);
-    drawFloatNumber(&tft, 33, y + AXIS_TEXT_OFFSET, state.getPos(axis), "%08.2f", false);
+    tft.setFont(FT(consolas, 44));
+    tft.drawFloatNumber(33, y + AXIS_TEXT_OFFSET, state.getPos(axis), "%08.2f", false);
 
-    restoreTextColor();
+    tft.restoreTextPalette();
 }
 
-bool AxisWidget::isTouched(int x, int y) {
+bool AxisWidget::isTouched(uint16_t x, uint16_t y) {
     if (TouchZone::isTouched(x, y)) {
         state.setSelectedAxis(axis);
         state.triggerUpdatedEvent();

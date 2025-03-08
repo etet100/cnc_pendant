@@ -7,6 +7,7 @@ QT = core gui widgets
 SOURCES += \
         forms/lcdwidget.cpp \
         forms/testwindow.cpp \
+        src/app.cpp \
         src/main.cpp \
         .pio/libdeps/nodemcuv2/CRC/src/CRC.cpp \
         .pio/libdeps/nodemcuv2/CRC/src/CRC12.cpp \
@@ -27,6 +28,7 @@ SOURCES += \
         src/logo.cpp \
         src/mainpage.cpp \
         src/nbSPI.cpp \
+        src/popup1.cpp \
         src/screen.cpp \
         src/serial.cpp \
         src/state.cpp \
@@ -61,6 +63,7 @@ HEADERS += \
     .pio/libdeps/nodemcuv2/arduino-EventManager/EventManager.h \
     forms/lcdwidget.h \
     forms/testwindow.h \
+    include/app.h \
     include/basepage.h \
     include/button.h \
     include/buttons.h \
@@ -76,6 +79,7 @@ HEADERS += \
     include/images.h \
     include/mainpage.h \
     include/nbSPI.h \
+    include/popup1.h \
     include/screen.h \
     include/serial.h \
     include/state.h \

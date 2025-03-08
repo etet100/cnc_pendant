@@ -6,17 +6,18 @@
 #include "controls.h"
 #include "wirelesscommunicator.h"
 #include "state.h"
-#include <Adafruit_ILI9341.h>
+#include "popup1.h"
+#include "screen.h"
 
 class AxisWidget : public Drawable, public TouchZone
 {
     public:
-        AxisWidget(Axis axis, int y, char axisName, Adafruit_ILI9341& tft);
-        bool isTouched(int x, int y) override;
+        AxisWidget(Axis axis, uint16_t y, char axisName, Screen& tft);
+        bool isTouched(uint16_t x, uint16_t y) override;
         void setSelected(bool selected);
 
     protected:
-        void draw_(int y1, int y2) override;
+        void draw_() override;
 
     private:
         int y;
@@ -26,14 +27,19 @@ class AxisWidget : public Drawable, public TouchZone
         void drawText();
 };
 
-class MainPage : public BasePage {
+class MainPage : public BasePage
+{
     public:
-        MainPage(Adafruit_ILI9341& tft);
-        void draw() override;
+        MainPage(Screen& tft);
         void onPowerOff(Callback callback);
+        void processTouch(uint16_t x, uint16_t y) override;
+        void processButtons(Buttons& buttons) override;
+        void invalidate(Invalidation mode = Invalidation::All) override;
+        void draw() override;
 
     protected:
         void processTouchZone(TouchZone* zone) override;
+        void draw_() override;
 
     private:
         void drawButtons();
@@ -43,6 +49,7 @@ class MainPage : public BasePage {
         WifiStateIndicator wifiIndicator;
         MachineStateIndicator machineStateIndicator;
         Callback powerOffCallback;
+        Popup1* popup1 = nullptr;
 };
 
 #endif // MAINPAGE_H_

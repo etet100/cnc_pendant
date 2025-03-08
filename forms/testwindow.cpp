@@ -24,15 +24,23 @@ TestWindow::~TestWindow() {
 
 bool TestWindow::topPressed()
 {
-    return ui->btnTop->isDown();
+    return ui->btnTop->isChecked();
 }
 
 bool TestWindow::bottomPressed()
 {
-    return ui->btnBottom->isDown();
+    return ui->btnBottom->isChecked();
 }
 
 bool TestWindow::wheelPressed()
 {
     return ui->btnWheel->isDown();
+}
+
+void TestWindow::limits(uint16_t limits[])
+{
+    limits[0] = ui->limit0->value();
+    limits[1] = ui->limit1->value();
+    limits[2] = ui->limit2->value();
+    limits[3] = ui->limit3->value();
 }

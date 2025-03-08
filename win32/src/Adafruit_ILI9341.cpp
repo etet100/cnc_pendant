@@ -1,13 +1,17 @@
+#include <QImage>
 #include <QPainter>
 #include "forms/lcdwidget.h"
 #include "Adafruit_ILI9341.h"
 #include "Adafruit_GFX.h"
 #include "Adafruit_SPITFT.h"
+#include "screen.h"
 
 static unsigned short wndX = 0;
 static unsigned short wndY = 0;
 static unsigned short wndW = 240;
 static unsigned short wndH = 320;
+static unsigned short curX = wndX;
+static unsigned short curY = wndY;
 
 extern LcdWidget *lcd;
 
@@ -27,18 +31,18 @@ inline QRgb fromC16(uint16_t c16) {
     return QColor(R8, G8, B8).rgb();
 }
 
-Adafruit_ILI9341::Adafruit_ILI9341(int8_t _CS, int8_t _DC, int8_t _MOSI, int8_t _SCLK, int8_t _RST, int8_t _MISO) : Adafruit_SPITFT(_CS, _DC, _MOSI, _SCLK, _RST, _MISO) {
+Adafruit_ILI9341::Adafruit_ILI9341(int8_t _CS, int8_t _DC, int8_t _MOSI, int8_t _SCLK, int8_t _RST, int8_t _MISO) : Adafruit_SPITFT(SCREEN_WIDTH, SCREEN_HEIGHT, _CS, _DC, _RST) {
 }
 
-Adafruit_ILI9341::Adafruit_ILI9341(int8_t _CS, int8_t _DC, int8_t _RST) : Adafruit_SPITFT(_CS, _DC, _RST, 0, 0) {
+Adafruit_ILI9341::Adafruit_ILI9341(int8_t _CS, int8_t _DC, int8_t _RST) : Adafruit_SPITFT(SCREEN_WIDTH, SCREEN_HEIGHT, _CS, _DC, _RST) {
 }
 
 void Adafruit_ILI9341::begin(unsigned int) {
 }
 
 void Adafruit_ILI9341::setAddrWindow(unsigned short x, unsigned short y, unsigned short w, unsigned short h) {
-    wndX = x;
-    wndY = y;
+    curX = wndX = x;
+    curY = wndY = y;
     wndW = w;
     wndH = h;
 }
@@ -49,14 +53,16 @@ void Adafruit_ILI9341::invertDisplay(bool) {
 void Adafruit_ILI9341::setRotation(unsigned char) {
 }
 
-Adafruit_GFX::Adafruit_GFX(short, short) {
-
+Adafruit_GFX::Adafruit_GFX(short w , short h) : _width(w), _height(h) {
 }
 
 void Adafruit_GFX::drawCircle(short, short, short, unsigned short) {
 }
 
 void Adafruit_GFX::drawPixel(int16_t x, int16_t y, uint16_t color) {
+    QImage *img = lcd->image();
+    img->setPixelColor(curX, curY, fromC16(color));
+    lcd->unlock();    
 }
 
 void Adafruit_GFX::startWrite(void) {}
@@ -75,20 +81,25 @@ void Adafruit_GFX::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color
 void Adafruit_GFX::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {}
 void Adafruit_GFX::fillRect(int16_t x, int16_t y, int16_t w, int16_t h,
                         uint16_t color) {}
-void Adafruit_GFX::fillScreen(uint16_t color) {}
+void Adafruit_GFX::fillScreen(uint16_t color) {
+    fillRect(0, 0, width(), height(), color);
+}
 void Adafruit_GFX::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color) {}
-void Adafruit_GFX::drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {}
+
+void Adafruit_GFX::drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {
+
+}
 
 size_t Adafruit_GFX::write(unsigned char) {
 }
 
-Adafruit_SPITFT::Adafruit_SPITFT(unsigned short, unsigned short, signed char, signed char, signed char, signed char, signed char, signed char) : 
-    Adafruit_GFX(0, 0) {
+Adafruit_SPITFT::Adafruit_SPITFT(unsigned short w, unsigned short h, signed char, signed char, signed char, signed char, signed char, signed char) :
+    Adafruit_GFX(w, h) {
 
 }
 
-Adafruit_SPITFT::Adafruit_SPITFT(unsigned short, unsigned short, signed char, signed char, signed char) : 
-    Adafruit_GFX(0, 0) {
+Adafruit_SPITFT::Adafruit_SPITFT(unsigned short w, unsigned short h, signed char, signed char, signed char) :
+    Adafruit_GFX(w, h) {
 }
 
 void Adafruit_SPITFT::drawPixel(short, short, unsigned short) {
@@ -132,17 +143,15 @@ void Adafruit_SPITFT::drawFastHLine(short, short, short, unsigned short) {
 void nbSPIwriteBytes(uint8_t *data, uint16_t size) {
     QImage *img = lcd->image();
 
-    unsigned short x = wndX;
-    unsigned short y = wndY;
     size >>= 1;
     while (size--) {
-        img->setPixel(x, y, fromC16(c16(&data)));
-        x++;
-        if (x >= wndX + wndW) {
-            x = wndX;
-            y++;
-            if (y >= wndY + wndH) {
-                y = wndY;
+        img->setPixel(curX, curY, fromC16(c16(&data)));
+        curX++;
+        if (curX >= wndX + wndW) {
+            curX = wndX;
+            curY++;
+            if (curY >= wndY + wndH) {
+                curY = wndY;
             }
         }
     }

@@ -1,21 +1,23 @@
 #include "drawable.h"
+#include "drawing.h"
 
-Drawable::Drawable(Adafruit_ILI9341& tft, int x, int y, int width, int height)
+Drawable::Drawable(Screen& tft, int x, int y, int width, int height)
     : tft(tft)
     , x(x)
     , y(y)
+    , y2(y + height)
     , width(width)
     , height(height) {
 }
 
-void Drawable::draw(int y1, int y2) {    
+void Drawable::draw() {
     if (invalidation == Invalidation::None) {
         return;
     }
-    if (y > y2 || y + height < y1) {
+    if (!tft.partiallyInLimits(y, y + height)) {
         return;
     }
-    draw_(y1, y2);
+    draw_();
     invalidation = Invalidation::None;
 }
 

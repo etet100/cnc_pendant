@@ -39,7 +39,7 @@ IRAM_ATTR boolean nbSPIisBusy() {
     return (SPI1CMD & SPIBUSY); // true while SPI sends data
 }
 
-// This will accept data of ary length to send via SPI
+// This will accept data of any length to send via SPI
 IRAM_ATTR void nbSPIwriteBytes(uint8_t *data, uint16_t size) {
     NBSPI_TDBG_HIGH;
     _nbspi_isbusy = true;
@@ -56,6 +56,7 @@ IRAM_ATTR void nbSPIwriteBytes(uint8_t *data, uint16_t size) {
 // This will send up to 64 bytes via SPI
 IRAM_ATTR void inline nbSPIwriteChunk() {
     uint16_t size = _nbspi_size;
+    assert(size > 0);
     if(size > 64) size = 64;
     _nbspi_size -= size;
     const uint32_t bits = (size * 8) - 1;
